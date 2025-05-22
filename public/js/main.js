@@ -369,6 +369,48 @@ document.addEventListener('DOMContentLoaded', () => {
                                             if (data.link) {
                                                 currentResearchId = data.link.split('/').pop(); // Extract ID
                                                 shareLinkContainer.innerHTML = `<p>Shareable Link: <a href="${escapeHTML(data.link)}" target="_blank">${escapeHTML(data.link)}</a></p>`;
+
+                                                // Display usage information if available (no longer on main page, only on result page)
+                                                // if (data.usage) {
+                                                //     const usageDiv = document.createElement('div');
+                                                //     usageDiv.id = 'token-usage-info';
+                                                //     usageDiv.style.marginTop = '10px';
+                                                //     usageDiv.style.fontSize = '0.9em';
+                                                //     usageDiv.style.color = '#aaa';
+                                                //     let usageHtml = `
+                                                //         <strong>Token Usage:</strong><br>
+                                                //         Prompt: ${data.usage.prompt_tokens || 'N/A'}<br>
+                                                //         Completion: ${data.usage.completion_tokens || 'N/A'}<br>
+                                                //         Total: ${data.usage.total_tokens || 'N/A'}
+                                                //     `;
+                                                //     if (data.cost !== undefined && data.cost !== null) {
+                                                //         usageHtml += `<br><strong>Estimated Cost:</strong> $${data.cost.toFixed(6)}`;
+                                                //     }
+                                                //     usageDiv.innerHTML = usageHtml;
+                                                //     const resultsContainer = document.getElementById('results');
+                                                //     if (shareLinkContainer && shareLinkContainer.parentNode) {
+                                                //         shareLinkContainer.parentNode.insertBefore(usageDiv, shareLinkContainer.nextSibling);
+                                                //     } else if (resultsContainer) {
+                                                //         resultsContainer.appendChild(usageDiv);
+                                                //     }
+                                                // }
+
+                                                // Show cost popup
+                                                if (data.cost !== undefined && data.cost !== null) {
+                                                    const costPopup = document.getElementById('cost-popup');
+                                                    if (costPopup) {
+                                                        costPopup.textContent = `Estimated API Cost: $${data.cost.toFixed(6)}`;
+                                                        costPopup.classList.add('show');
+                                                        setTimeout(() => {
+                                                            costPopup.classList.remove('show');
+                                                            costPopup.classList.add('fade-out'); // Start fade-out
+                                                            // Optionally, fully hide after animation if CSS doesn't handle it
+                                                            setTimeout(() => {
+                                                                costPopup.classList.remove('fade-out');
+                                                            }, 500); // Match CSS transition duration
+                                                        }, 3000); // Display for 3 seconds
+                                                    }
+                                                }
                                             }
                                             break;
                                         case 'error':

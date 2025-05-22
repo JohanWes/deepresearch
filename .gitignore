@@ -19,6 +19,9 @@ data/results/
 # Debug files
 debug_screenshot.png
 
+# Git disabled directory
+.git_disabled/
+
 # OS generated files
 .DS_Store
 .DS_Store?

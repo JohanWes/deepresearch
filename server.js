@@ -8,7 +8,7 @@ import { v4 as uuidv4 } from 'uuid'; // Import uuid
 import { searchWeb } from './src/crawler.js'; // Use .js extension
 import { extractContent } from './src/extractor.js'; // Import the new extractor function
 // Import both the original and the new streaming function from llm.js
-import { summarizeContent, summarizeContentStream } from './src/llm.js';
+import { summarizeContent, summarizeContentStream, testOpenRouterNonStreaming } from './src/llm.js';
 
 // Load environment variables from .env file
 dotenv.config();
@@ -192,6 +192,8 @@ app.get('/', (req, res) => {
           </div>
         </div>
 
+        <div id="cost-popup"></div> <!-- Added for API cost popup -->
+
         <script src="/js/main.js" defer></script>
     </body>
     </html>
@@ -305,6 +307,7 @@ async function processLlmStreamWithRetry(
 
         let buffer = '';
         let fullAnswer = ''; // Accumulate the full answer for this attempt
+        let usageData = null; // Variable to store usage data
 
         // Use promises to handle stream events completion
         await new Promise((resolve, reject) => {
@@ -343,6 +346,12 @@ async function processLlmStreamWithRetry(
                                 fullAnswer += contentDelta; // Append to full answer for this attempt
                                 sendSseMessage(contentDelta); // Forward delta to client
                             }
+
+                            // Check for usage data in the chunk
+                            if (dataObj.usage) {
+                                usageData = dataObj.usage;
+                                console.log(`[Server processLlmStreamWithRetry Attempt ${attempt}] Received usage data:`, usageData);
+                            }
                         } catch (parseError) {
                             console.error(`[Server processLlmStreamWithRetry Attempt ${attempt}] Error parsing OpenRouter SSE data line:`, parseError, 'Line:', line);
                             // Don't trigger retry for parsing errors, but log it. Maybe send client error?
@@ -363,12 +372,26 @@ async function processLlmStreamWithRetry(
 
                 // --- Save Result and Send Link (only on successful stream end) ---
                 try {
+                    let cost = null;
+                    const inputPrice = parseFloat(process.env.OPENROUTER_INPUT_PRICE_PER_MILLION);
+                    const outputPrice = parseFloat(process.env.OPENROUTER_OUTPUT_PRICE_PER_MILLION);
+
+                    if (usageData && usageData.prompt_tokens && usageData.completion_tokens && !isNaN(inputPrice) && !isNaN(outputPrice)) {
+                        const promptCost = (usageData.prompt_tokens / 1000000) * inputPrice;
+                        const completionCost = (usageData.completion_tokens / 1000000) * outputPrice;
+                        cost = parseFloat((promptCost + completionCost).toFixed(6)); // toFixed(6) for precision up to $0.000001
+                    } else {
+                        console.warn('[Server processLlmStreamWithRetry] Could not calculate cost: Missing usage data or pricing info in .env');
+                    }
+
                     const resultData = {
                         id: resultId, // Use the passed resultId
                         query: query,
                         answerHtml: fullAnswer, // Save the accumulated HTML answer
                         sources: successfulSourceItems, // Save the sources used
-                        timestamp: new Date().toISOString()
+                        timestamp: new Date().toISOString(),
+                        usage: usageData, // Add usage data to the saved result
+                        cost: cost // Add calculated cost
                     };
                     const filePath = path.join(dataDir, `${resultId}.json`);
 
@@ -376,7 +399,15 @@ async function processLlmStreamWithRetry(
                     console.log(`[Server processLlmStreamWithRetry Attempt ${attempt}] Result saved to ${filePath}`);
 
                     const shareableLink = `/research/${resultId}`;
-                    sendSseMessage({ link: shareableLink }, 'resultLink');
+                    // Send usage data and cost along with the link if available
+                    const linkData = { link: shareableLink };
+                    if (usageData) {
+                        linkData.usage = usageData;
+                    }
+                    if (cost !== null) {
+                        linkData.cost = cost;
+                    }
+                    sendSseMessage(linkData, 'resultLink');
                     sendSseMessage('[DONE]'); // Send final DONE only on complete success
                     resolve({ success: true }); // Indicate success
 
@@ -615,6 +646,16 @@ app.get('/research/:id', async (req, res) => {
                     <div id="result-answer-content">${result.answerHtml}</div> <!-- Added ID -->
 
                     ${sourcesToggleHtml}
+
+                    ${result.usage ? `
+                    <div style="margin-top: 20px; font-size: 0.9em; color: #aaa;">
+                        <strong>Token Usage:</strong><br>
+                        Prompt: ${result.usage.prompt_tokens || 'N/A'}<br>
+                        Completion: ${result.usage.completion_tokens || 'N/A'}<br>
+                        Total: ${result.usage.total_tokens || 'N/A'}
+                        ${result.cost !== undefined && result.cost !== null ? `<br><strong>Estimated Cost:</strong> $${result.cost.toFixed(6)}` : ''}
+                    </div>
+                    ` : ''}
                 </main>
                 <script src="/js/main.js" defer></script> <!-- Ensure main.js is loaded -->
             </body>
