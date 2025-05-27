@@ -1,4 +1,3 @@
-/* Login Page Styles */
 body.login-page { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 40px 20px; background-color: #222; color: #e0e0e0; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
 .login-container { background-color: #2a2a2a; padding: 30px 40px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5); text-align: center; width: 100%; max-width: 400px; }
 .login-container h1 { color: #e0e0e0; font-size: 2em; margin-bottom: 20px; }
@@ -10,14 +9,12 @@ body.login-page { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
 .login-container button:hover { background-color: #0056b3; }
 .login-container .error-message { color: #ff4d4d; margin-top: 15px; font-weight: bold; }
 
-/* Main Application & Shared Styles */
 :root {
-    --sidebar-width: 250px; /* Define sidebar width as a variable */
-    --header-height: 50px; /* Define header height for mobile toggle */
+    --sidebar-width: 250px;
+    --header-height: 50px;
 }
 body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; background-color: #222; color: #e0e0e0; font-size: 16px; line-height: 1.6; display: flex; }
 
-/* Sidebar Styles (Desktop) */
 #history-sidebar {
     width: var(--sidebar-width);
     height: 100vh;
@@ -30,8 +27,8 @@ body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; 
     box-sizing: border-box;
     overflow-y: auto;
     color: #ccc;
-    z-index: 1000; /* Ensure sidebar is above main content if overlapping */
-    transition: transform 0.3s ease; /* Add transition for sliding effect */
+    z-index: 1000;
+    transition: transform 0.3s ease;
 }
 #history-sidebar h2 {
     font-size: 1.4em;
@@ -54,19 +51,19 @@ body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; 
     transition: background-color 0.2s ease;
     white-space: nowrap;
     overflow: hidden;
-    text-overflow: ellipsis; /* Show ellipsis for long queries */
+    text-overflow: ellipsis;
     font-size: 0.95em;
-    position: relative; /* Needed for absolute positioning of delete button */
-    padding-right: 30px; /* Add space for the delete button */
+    position: relative;
+    padding-right: 30px;
 }
 #history-list li:hover {
     background-color: #333;
 }
 #history-list li .delete-history {
     position: absolute;
-    top: 50%; /* Center vertically */
+    top: 50%;
     right: 10px;
-    transform: translateY(-50%); /* Adjust vertical centering */
+    transform: translateY(-50%);
     font-size: 0.9em;
     font-weight: bold;
     color: #aaa;
@@ -80,9 +77,8 @@ body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; 
     color: #fff;
 }
 
-/* Mobile Header/Toggle Button */
 #mobile-header {
-    display: none; /* Hidden by default on desktop */
+    display: none;
     position: fixed;
     top: 0;
     left: 0;
@@ -90,7 +86,7 @@ body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; 
     height: var(--header-height);
     background-color: #1c1c1c;
     border-bottom: 1px solid #444;
-    z-index: 1001; /* Above sidebar */
+    z-index: 1001;
     align-items: center;
     padding: 0 15px;
     box-sizing: border-box;
@@ -99,46 +95,43 @@ body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; 
     background: none;
     border: none;
     color: #e0e0e0;
-    font-size: 24px; /* Hamburger icon size */
+    font-size: 24px;
     cursor: pointer;
     padding: 5px 10px;
 }
 
-/* Main Content Area (Desktop) */
 main {
     margin-left: var(--sidebar-width);
     padding: 40px 30px;
     width: calc(100% - var(--sidebar-width));
     box-sizing: border-box;
-    transition: margin-left 0.3s ease; /* Smooth transition when sidebar collapses */
+    transition: margin-left 0.3s ease;
 }
 
-/* General Styles (Main App) */
 main h1 { text-align: center; color: #e0e0e0; font-size: 2.5em; letter-spacing: 1px; margin-bottom: 30px; }
 main form { display: flex; justify-content: center; align-items: center; margin-bottom: 40px; }
 main input[type="text"] { padding: 12px 15px; width: 60%; max-width: 500px; border: none; border-radius: 5px 0 0 5px; background-color: #333; color: #e0e0e0; font-size: 1.1em; outline: none; }
 main button { padding: 12px 20px; border: none; background-color: #007bff; color: white; border-radius: 0 5px 5px 0; cursor: pointer; font-size: 1.1em; transition: background-color 0.2s ease; }
 main button:hover { background-color: #0056b3; }
-#results { margin-top: 40px; padding: 20px; background-color: #2a2a2a; border-radius: 8px; } /* Adjusted padding */
-#results h2 { font-size: 1.6em; margin-bottom: 15px; color: #f0f0f0; } /* Adjusted size */
+#results { margin-top: 40px; padding: 20px; background-color: #2a2a2a; border-radius: 8px; }
+#results h2 { font-size: 1.6em; margin-bottom: 15px; color: #f0f0f0; }
 #results p { margin-bottom: 1em; }
 #results ul { list-style-type: decimal; padding-left: 20px; margin-top: 1em; }
 #results li { margin-bottom: 0.5em; }
-.placeholder { color: #888; text-align: center; padding: 20px 0; } /* Added padding */
+.placeholder { color: #888; text-align: center; padding: 20px 0; }
 main input[type="text"]:focus { box-shadow: 0 0 0 2px #61dafb; }
 main a { color: #61dafb; text-decoration: none; }
 main a:hover { text-decoration: underline; }
 main sup a { color: #FFFFFF !important; }
 
-/* Loading Overlay Styles */
 #loading-overlay {
-    display: none; /* Hidden by default */
+    display: none;
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.75); /* Dark semi-transparent background */
+    background-color: rgba(0, 0, 0, 0.75);
     z-index: 1000;
     align-items: center;
     justify-content: center;
@@ -146,7 +139,7 @@ main sup a { color: #FFFFFF !important; }
     color: #e0e0e0;
 }
 #loading-overlay.loading-active {
-    display: flex; /* Show when active */
+    display: flex;
 }
 .loading-content {
     background-color: #2a2a2a;
@@ -168,29 +161,27 @@ main sup a { color: #FFFFFF !important; }
     margin-bottom: 0.5em;
     word-break: break-all;
 }
-#loading-source-count { /* Style for the mobile source count */
-    display: none; /* Hidden by default */
+#loading-source-count {
+    display: none;
     margin-top: 1em;
     font-size: 1.1em;
     color: #ccc;
 }
-/* Basic CSS Spinner */
 .spinner {
     border: 4px solid rgba(255, 255, 255, 0.3);
     border-radius: 50%;
-    border-top: 4px solid #007bff; /* Spinner color */
+    border-top: 4px solid #007bff;
     width: 40px;
     height: 40px;
     animation: spin 1s linear infinite;
-    margin: 0 auto 1em auto; /* Center the spinner */
+    margin: 0 auto 1em auto;
 }
 @keyframes spin {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
 }
 
-/* Result Page Specific Styles (Desktop) */
-main.container { /* Applied to the main element on the result page */
+main.container {
     position: relative;
     margin-left: var(--sidebar-width);
     padding: 40px 30px;
@@ -203,7 +194,7 @@ main.container { /* Applied to the main element on the result page */
     margin-right: 20px;
     transition: margin-left 0.3s ease;
 }
-main.container h1 { color: #e0e0e0; font-size: 2em; margin-bottom: 10px; text-align: left; } /* Align left */
+main.container h1 { color: #e0e0e0; font-size: 2em; margin-bottom: 10px; text-align: left; }
 main.container h2 { font-size: 1.8em; margin-top: 30px; margin-bottom: 15px; color: #f0f0f0; border-bottom: 1px solid #444; padding-bottom: 5px; }
 main.container h3 { font-size: 1.2em; margin-top: 20px; margin-bottom: 10px; color: #ccc; }
 main.container p { margin-bottom: 1em; }
@@ -213,11 +204,10 @@ main.container a { color: #61dafb; text-decoration: none; }
 main.container a:hover { text-decoration: underline; }
 main.container sup a { color: #FFFFFF !important; }
 main.container .timestamp { font-size: 0.85em; color: #aaa; text-align: right; margin-top: 30px; }
-main.container details { margin-top: 20px; } /* Style for the details toggle */
+main.container details { margin-top: 20px; }
 main.container summary { cursor: pointer; font-weight: bold; color: #ccc; }
 main.container details ul { margin-top: 10px; }
 
-/* Home Icon Link Styles (Desktop) */
 .home-icon-link {
     position: absolute;
     top: 25px;
@@ -238,31 +228,29 @@ main.container details ul { margin-top: 10px; }
     stroke: #fff;
 }
 
-/* Responsive Styles */
 @media (max-width: 768px) {
-    body:not(.login-page) { /* Apply only if not login page */
-        display: block; /* Stack elements vertically */
+    body:not(.login-page) {
+        display: block;
     }
     #mobile-header {
-        display: flex; /* Show header on mobile */
-        justify-content: space-between; /* Space out toggle and home icon */
+        display: flex;
+        justify-content: space-between;
     }
     #history-sidebar {
-        transform: translateX(-100%); /* Hide sidebar off-screen */
-        padding-top: calc(var(--header-height) + 10px); /* Add padding below header */
-        border-right: none; /* Remove border when hidden/overlaying */
-        box-shadow: 2px 0 5px rgba(0,0,0,0.5); /* Add shadow when open */
+        transform: translateX(-100%);
+        padding-top: calc(var(--header-height) + 10px);
+        border-right: none;
+        box-shadow: 2px 0 5px rgba(0,0,0,0.5);
     }
     body.sidebar-open #history-sidebar {
-        transform: translateX(0); /* Show sidebar */
+        transform: translateX(0);
     }
-    main { /* Target both main app and result page main */
-        margin-left: 0; /* Remove left margin */
-        width: 100%; /* Full width */
-        padding: 20px 15px; /* Adjust padding */
-        padding-top: calc(var(--header-height) + 20px); /* Add padding below header */
+    main {
+        margin-left: 0;
+        width: 100%;
+        padding: 20px 15px;
+        padding-top: calc(var(--header-height) + 20px);
     }
-    /* Main App Specific Mobile */
     main:not(.container) h1 { font-size: 2em; margin-bottom: 20px; }
     main:not(.container) form { flex-direction: column; gap: 10px; }
     main:not(.container) input[type="text"] { width: 90%; max-width: none; border-radius: 5px; }
@@ -270,48 +258,45 @@ main.container details ul { margin-top: 10px; }
     #results { padding: 15px; }
     #results h2 { font-size: 1.4em; }
 
-    /* Mobile Loading Overlay Adjustments */
     #loading-urls {
-        display: none; /* Hide the URL list on mobile */
+        display: none;
     }
     #loading-urls-label {
-        display: none; /* Hide the "Processing content from:" label on mobile */
+        display: none;
     }
     #loading-source-count {
-        display: block; /* Show the source count on mobile */
+        display: block;
     }
-    .loading-content { /* Adjust padding for smaller screens */
+    .loading-content {
         padding: 1.5em 2em;
     }
 
-    /* Result Page Specific Mobile */
     main.container {
-        margin-top: 0; /* Remove top margin */
-        margin-right: 0; /* Remove right margin */
-        margin-left: 0; /* Ensure no left margin */
-        width: 100%; /* Ensure full width */
-        max-width: 100%; /* Prevent overflow */
-        box-sizing: border-box; /* Include padding in width */
-        border-radius: 0; /* Remove border-radius on mobile */
+        margin-top: 0;
+        margin-right: 0;
+        margin-left: 0;
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
+        border-radius: 0;
     }
     main.container h1 { font-size: 1.8em; }
     main.container h2 { font-size: 1.5em; }
     .home-icon-link {
-        position: static; /* Remove absolute positioning */
-        margin-left: auto; /* Push to the right within the header */
-        padding: 0; /* Reset padding */
-        display: flex; /* Use flex to center icon */
+        position: static;
+        margin-left: auto;
+        padding: 0;
+        display: flex;
         align-items: center;
         height: 100%;
     }
     .home-icon-link svg {
-         margin-right: 5px; /* Add some space if needed */
+         margin-right: 5px;
     }
-    main.container .timestamp { text-align: left; margin-top: 15px; } /* Adjust timestamp */
+    main.container .timestamp { text-align: left; margin-top: 15px; }
 
-    /* Hide elements intended only for desktop */
     .desktop-only {
-        display: none !important; /* Ensure it's hidden */
+        display: none !important;
     }
 }
 
@@ -319,14 +304,14 @@ main.container details ul { margin-top: 10px; }
     position: fixed;
     top: 20px;
     right: 20px;
-    background-color: #28a745; /* Green background */
+    background-color: #28a745;
     color: white;
     padding: 10px 15px;
     border-radius: 5px;
     box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-    z-index: 2000; /* High z-index to be on top */
-    opacity: 0; /* Start hidden */
-    visibility: hidden; /* Start hidden and not interactable */
+    z-index: 2000;
+    opacity: 0;
+    visibility: hidden;
     transition: opacity 0.5s ease-in-out, visibility 0.5s ease-in-out;
 }
 
@@ -338,4 +323,43 @@ main.container details ul { margin-top: 10px; }
 #cost-popup.fade-out {
     opacity: 0;
     visibility: hidden;
+}
+
+/* Rate Limit Popup Styles */
+#rate-limit-popup {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #dc3545; /* Red for error */
+    color: white;
+    padding: 20px 30px;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    z-index: 2000;
+    text-align: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.5s ease-in-out, visibility 0.5s ease-in-out;
+}
+
+#rate-limit-popup.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+#rate-limit-popup.fade-out {
+    opacity: 0;
+    visibility: hidden;
+}
+
+#rate-limit-popup p {
+    margin: 0 0 10px 0;
+    font-size: 1.1em;
+}
+
+#rate-limit-popup p:last-child {
+    margin-bottom: 0;
+    font-size: 0.9em;
+    opacity: 0.8;
 }

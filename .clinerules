@@ -1,0 +1,28 @@
+# Project Intelligence for Deep Research
+
+This file captures key patterns, preferences, and project intelligence specific to Deep Research to enhance future interactions and development.
+
+## General Guidelines:
+- Prioritize concise and concrete information over verbose explanations.
+- Maintain functionality while optimizing for token efficiency.
+
+## Memory Bank Management:
+- `projectbrief.md`: Core requirements and goals. No sensitive data.
+- `productContext.md`: User experience and core functionality.
+- `systemPatterns.md`: High-level architecture, simplified diagrams.
+- `techContext.md`: Technologies, libraries, APIs, constraints.
+- `activeContext.md`: Current work focus, recent decisions, immediate next steps.
+- `progress.md`: What works, what's left to build, known issues.
+
+## Code Style & Practices:
+- Minimize redundant comments.
+- Reduce excessive console logging, especially for routine operations.
+- Remove unused code (variables, functions, imports).
+- Ensure all functionality is preserved during optimization.
+
+## Specific Project Patterns:
+- **Authentication:** Session-based using `SESSION_SECRET_TOKEN` from `.env`.
+- **Data Persistence:** Research results saved as JSON files in `data/results/`.
+- **LLM Interaction:** OpenRouter API, streaming via SSE. Retry mechanism in `server.js`.
+- **Frontend:** Plain HTML/CSS/JS, IndexedDB for history.
+- **Configuration:** `.env` for sensitive keys and configurable parameters.
