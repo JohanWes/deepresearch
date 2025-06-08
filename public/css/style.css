@@ -483,7 +483,6 @@ main input[type="text"]::placeholder {
 
 main input[type="text"]:hover {
     box-shadow: var(--shadow-md);
-    transform: translateY(-1px);
 }
 
 main input[type="text"]:focus { 
@@ -500,17 +499,7 @@ main form:focus-within button {
     box-shadow: var(--shadow-lg);
 }
 
-main form:hover {
-    transform: translateY(-1px);
-}
-
-main form:hover input[type="text"] {
-    transform: translateY(0);
-}
-
-main form:hover button {
-    transform: translateY(0);
-}
+/* Form hover effects - removed bounce transforms */
 
 main button { 
     padding: var(--space-4) var(--space-6); 
@@ -542,7 +531,6 @@ main button::before {
 }
 
 main button:hover { 
-    transform: translateY(-2px) scale(1.02);
     box-shadow: var(--shadow-xl);
     border-color: var(--primary-600);
     filter: brightness(1.1);
