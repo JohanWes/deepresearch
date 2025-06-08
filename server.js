@@ -188,14 +188,17 @@ app.get('/', (req, res) => {
             </ul>
         </aside>
         <main>
-            <h1>Deep Research</h1>
+            <div class="hero-section">
+                <h1>Deep Research</h1>
+                <p class="hero-subtitle">AI-powered research with comprehensive source analysis</p>
+            </div>
             <form id="search-form">
                 <input type="text" id="query-input" name="query" placeholder="Enter your research topic..." required>
-            <button type="submit" id="research-button">Research</button>
-        </form>
-        <div id="results">
-            <p class="placeholder">Search results will appear here.</p>
-        </div>
+                <button type="submit" id="research-button">Research</button>
+            </form>
+            <div id="results">
+                <p class="placeholder">Search results will appear here.</p>
+            </div>
         </main>
 
         <div id="loading-overlay">
