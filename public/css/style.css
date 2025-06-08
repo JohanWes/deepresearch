@@ -432,21 +432,27 @@ main input[type="text"]::placeholder {
 
 main input[type="text"]:focus { 
     border-color: var(--primary-600);
-    box-shadow: 0 0 0 3px var(--primary-glow), var(--shadow-md);
+    box-shadow: var(--shadow-md);
     transform: translateY(-2px);
+    z-index: 2;
+    position: relative;
 }
 
 main form:focus-within {
     transform: translateY(-2px);
+    box-shadow: 0 0 0 3px var(--primary-glow);
+    border-radius: var(--radius-lg);
 }
 
 main form:focus-within button {
     transform: translateY(0);
+    border-color: var(--primary-600);
 }
 
 main button { 
     padding: var(--space-4) var(--space-6); 
-    border: none; 
+    border: 1px solid var(--glass-border); 
+    border-left: none;
     background: var(--primary-gradient); 
     color: var(--text-primary); 
     border-radius: 0 var(--radius-lg) var(--radius-lg) 0; 
