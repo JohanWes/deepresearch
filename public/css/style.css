@@ -409,6 +409,10 @@ main {
     position: relative;
     overflow-y: auto;
     overflow-x: hidden;
+}
+
+/* Only center content on homepage (non-container) */
+main:not(.container) {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -560,7 +564,7 @@ main button:active {
     transform: translateY(-1px) scale(1.01);
     box-shadow: var(--shadow-lg);
 }
-#results { 
+main:not(.container) #results { 
     margin-top: var(--space-10); 
     padding: 0;
     background: transparent;
