@@ -722,17 +722,21 @@ main.container {
     margin-left: var(--sidebar-width);
     padding: var(--space-8) var(--space-8);
     width: calc(100% - var(--sidebar-width));
+    height: 100vh;
     box-sizing: border-box;
     max-width: none;
     background: var(--glass-bg);
     backdrop-filter: var(--glass-blur);
     border: 1px solid var(--glass-border);
-    border-radius: var(--radius-xl);
-    margin-top: var(--space-5);
-    margin-right: var(--space-5);
+    border-top: none;
+    border-right: none;
+    border-radius: 0 0 0 var(--radius-xl);
+    margin-top: 0;
+    margin-right: 0;
     transition: margin-left var(--transition-slow);
     box-shadow: var(--shadow-lg);
-    overflow: hidden;
+    overflow-y: auto;
+    overflow-x: hidden;
 }
 
 main.container::before {
@@ -743,7 +747,6 @@ main.container::before {
     right: 0;
     height: 3px;
     background: var(--primary-gradient);
-    border-radius: var(--radius-xl) var(--radius-xl) 0 0;
 }
 main.container h1 { 
     color: var(--text-primary); 
@@ -955,8 +958,11 @@ main.container details ul {
         margin-left: 0;
         width: 100%;
         max-width: 100%;
+        height: calc(100vh - var(--header-height));
         box-sizing: border-box;
         border-radius: 0;
+        border: none;
+        padding-top: calc(var(--space-8) + var(--header-height));
     }
     main.container h1 { font-size: 1.8em; }
     main.container h2 { font-size: 1.5em; }
