@@ -694,8 +694,11 @@ main sup a {
     border-radius: var(--radius-xl);
     box-shadow: var(--shadow-xl);
     max-width: 450px;
+    max-height: 80vh;
     margin: var(--space-5);
     animation: slideInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    overflow-y: auto;
+    position: relative;
 }
 
 @keyframes slideInUp {
@@ -711,22 +714,42 @@ main sup a {
 #loading-urls {
     list-style: none;
     padding: 0;
-    margin-top: 1em;
+    margin-top: var(--space-4);
     text-align: left;
-    font-size: 0.9em;
-    color: #ccc;
-    border-top: 1px solid #444;
-    padding-top: 1em;
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+    border-top: 1px solid var(--glass-border);
+    padding-top: var(--space-4);
+    max-height: 40vh;
+    overflow-y: auto;
+    scrollbar-width: thin;
 }
+
+#loading-urls::-webkit-scrollbar {
+    width: 4px;
+}
+
+#loading-urls::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 2px;
+}
+
+#loading-urls::-webkit-scrollbar-thumb {
+    background: var(--primary-600);
+    border-radius: 2px;
+}
+
 #loading-urls li {
-    margin-bottom: 0.5em;
+    margin-bottom: var(--space-2);
     word-break: break-all;
+    padding: var(--space-1) 0;
 }
 #loading-source-count {
     display: none;
-    margin-top: 1em;
-    font-size: 1.1em;
-    color: #ccc;
+    margin-top: var(--space-4);
+    font-size: var(--text-base);
+    color: var(--text-secondary);
+    font-weight: 500;
 }
 .spinner {
     border: 3px solid rgba(255, 255, 255, 0.1);
