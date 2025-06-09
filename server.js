@@ -202,6 +202,7 @@ app.get('/', (req, res) => {
         <div id="mobile-header">
              <button id="sidebar-toggle">☰</button>
         </div>
+        <button id="desktop-sidebar-toggle">☰</button>
         <aside id="history-sidebar">
             <h2>History</h2>
             <ul id="history-list">
@@ -590,6 +591,7 @@ app.get('/research/:id', async (req, res) => {
                         </svg>
                     </a>
                  </div>
+                <button id="desktop-sidebar-toggle">☰</button>
                 <aside id="history-sidebar">
                     <h2>History</h2>
                     <ul id="history-list">

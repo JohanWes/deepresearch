@@ -148,6 +148,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const loadingSourceCountElement = document.getElementById('loading-source-count');
     const historyList = document.getElementById('history-list');
     const sidebarToggle = document.getElementById('sidebar-toggle');
+    const desktopSidebarToggle = document.getElementById('desktop-sidebar-toggle');
     const bodyElement = document.body;
     const rateLimitPopup = document.getElementById('rate-limit-popup');
     const rateLimitMessage = document.getElementById('rate-limit-message');
@@ -155,9 +156,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
     loadAndDisplayHistory();
 
+    // Mobile sidebar toggle
     if (sidebarToggle && bodyElement) {
         sidebarToggle.addEventListener('click', () => {
             bodyElement.classList.toggle('sidebar-open');
+        });
+    }
+
+    // Desktop sidebar toggle
+    if (desktopSidebarToggle && bodyElement) {
+        desktopSidebarToggle.addEventListener('click', () => {
+            bodyElement.classList.toggle('sidebar-collapsed');
         });
     }
 
