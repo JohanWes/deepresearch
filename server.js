@@ -550,10 +550,10 @@ app.get('/research/:id', async (req, res) => {
         let sourcesToggleHtml = '';
         if (result.sources && result.sources.length > 0) {
             let sourceListItems = '';
-            result.sources.forEach((source) => {
+            result.sources.forEach((source, index) => {
                  const link = source.link ? escapeHTML(source.link) : '#';
                  const title = source.title ? escapeHTML(source.title) : link;
-                 sourceListItems += `<li><a href="${link}" target="_blank">${title}</a></li>`;
+                 sourceListItems += `<li id="source-${index + 1}"><a href="${link}" target="_blank">${title}</a></li>`;
             });
             sourcesToggleHtml = `
                 <details style="margin-top: 20px;">
