@@ -222,7 +222,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (!searchResponse.ok) {
                     const errorData = await searchResponse.json().catch(() => ({ error: 'Failed to parse search error response.' }));
                     if (searchResponse.status === 429) {
-                        showRateLimitPopup(errorData.error, errorData.currentUsage, errorData.limit);
+                        showRateLimitPopup(errorData.error, errorData.currentUsage, errorData.limit, rateLimitPopup, rateLimitMessage, rateLimitCount, queryInput, researchButton);
                         return; // Stop further processing
                     }
                     throw new Error(`Search request failed: ${searchResponse.status} ${searchResponse.statusText} - ${errorData.error || 'Unknown error'}`);
@@ -426,19 +426,19 @@ async function handleStreamEnd(isError = false, query, researchId, sources, resu
     }
 }
 
-function showRateLimitPopup(message, currentUsage, limit) {
-    if (rateLimitPopup && rateLimitMessage && rateLimitCount) {
-        rateLimitMessage.textContent = message;
-        rateLimitCount.textContent = `Requests today: ${currentUsage}/${limit}`;
-        rateLimitPopup.classList.add('show');
-        queryInput.disabled = true;
-        researchButton.disabled = true;
+function showRateLimitPopup(message, currentUsage, limit, popupElement, messageElement, countElement, queryInput, researchButton) {
+    if (popupElement && messageElement && countElement) {
+        messageElement.textContent = message;
+        countElement.textContent = `Requests today: ${currentUsage}/${limit}`;
+        popupElement.classList.add('show');
+        if (queryInput) queryInput.disabled = true;
+        if (researchButton) researchButton.disabled = true;
 
         setTimeout(() => {
-            rateLimitPopup.classList.remove('show');
-            rateLimitPopup.classList.add('fade-out');
+            popupElement.classList.remove('show');
+            popupElement.classList.add('fade-out');
             setTimeout(() => {
-                rateLimitPopup.classList.remove('fade-out');
+                popupElement.classList.remove('fade-out');
             }, 500);
         }, 5000); // Popup disappears after 5 seconds
     }
