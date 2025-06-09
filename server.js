@@ -19,8 +19,8 @@ const app = express();
 const dataDir = path.join(__dirname, 'data', 'results');
 fs.mkdir(dataDir, { recursive: true }).catch(console.error);
 
-const usageFilePath = path.join(__dirname, 'data', 'usage.json');
-fs.mkdir(path.dirname(usageFilePath), { recursive: true }).catch(console.error);
+const usageDir = path.join(__dirname, 'data', 'usage');
+fs.mkdir(usageDir, { recursive: true }).catch(console.error);
 
 const PORT = process.env.PORT || 3000;
 const HOST = process.env.SERVER_IP || '0.0.0.0';
@@ -41,6 +41,12 @@ if (!SESSION_SECRET) {
     process.exit(1);
 }
 
+function getUserFingerprint(req) {
+    const ip = req.ip || req.connection.remoteAddress || req.socket.remoteAddress || 'unknown';
+    const userAgent = req.get('User-Agent') || 'unknown';
+    return `${ip}_${userAgent.substring(0, 50)}`;
+}
+
 const checkAuthentication = (req, res, next) => {
     const sessionToken = req.cookies[SESSION_COOKIE_NAME];
     if (sessionToken && sessionToken === SESSION_SECRET) {
@@ -55,37 +61,51 @@ const checkAuthentication = (req, res, next) => {
     }
 };
 
-async function getUsageData() {
+async function getUsageData(userFingerprint) {
+    const today = new Date().toISOString().split('T')[0];
+    const usageFilePath = path.join(usageDir, `${today}.json`);
+    
     try {
         const data = await fs.readFile(usageFilePath, 'utf-8');
-        return JSON.parse(data);
+        const usageData = JSON.parse(data);
+        return usageData[userFingerprint] || { count: 0 };
     } catch (error) {
         if (error.code === 'ENOENT') {
-            return { date: new Date().toISOString().split('T')[0], count: 0 };
+            return { count: 0 };
         }
         console.error('Error reading usage data:', error);
-        return { date: new Date().toISOString().split('T')[0], count: 0 };
+        return { count: 0 };
     }
 }
 
-async function updateUsageData(data) {
+async function updateUsageData(userFingerprint, userUsageData) {
+    const today = new Date().toISOString().split('T')[0];
+    const usageFilePath = path.join(usageDir, `${today}.json`);
+    
     try {
-        await fs.writeFile(usageFilePath, JSON.stringify(data, null, 2));
+        let allUsageData = {};
+        try {
+            const existingData = await fs.readFile(usageFilePath, 'utf-8');
+            allUsageData = JSON.parse(existingData);
+        } catch (error) {
+            if (error.code !== 'ENOENT') {
+                console.error('Error reading existing usage data:', error);
+            }
+        }
+        
+        allUsageData[userFingerprint] = userUsageData;
+        await fs.writeFile(usageFilePath, JSON.stringify(allUsageData, null, 2));
     } catch (error) {
         console.error('Error writing usage data:', error);
     }
 }
 
 const rateLimitMiddleware = async (req, res, next) => {
-    const today = new Date().toISOString().split('T')[0];
-    let usage = await getUsageData();
-
-    if (usage.date !== today) {
-        usage = { date: today, count: 0 };
-    }
+    const userFingerprint = getUserFingerprint(req);
+    let usage = await getUsageData(userFingerprint);
 
     if (usage.count >= DAILY_REQUEST_LIMIT) {
-        console.log(`[Rate Limit] Daily limit reached for ${today}.`);
+        console.log(`[Rate Limit] Daily limit reached for user fingerprint: ${userFingerprint}`);
         return res.status(429).json({
             error: `Daily request limit (${DAILY_REQUEST_LIMIT}) reached. Please try again tomorrow.`,
             currentUsage: usage.count,
@@ -94,9 +114,9 @@ const rateLimitMiddleware = async (req, res, next) => {
     }
 
     usage.count++;
-    await updateUsageData(usage);
-    req.currentUsage = usage.count; // Attach current usage to request for potential frontend display
-    req.dailyLimit = DAILY_REQUEST_LIMIT; // Attach daily limit to request
+    await updateUsageData(userFingerprint, usage);
+    req.currentUsage = usage.count;
+    req.dailyLimit = DAILY_REQUEST_LIMIT;
     next();
 };
 
@@ -530,10 +550,10 @@ app.get('/research/:id', async (req, res) => {
         let sourcesToggleHtml = '';
         if (result.sources && result.sources.length > 0) {
             let sourceListItems = '';
-            result.sources.forEach((source) => {
+            result.sources.forEach((source, index) => {
                  const link = source.link ? escapeHTML(source.link) : '#';
                  const title = source.title ? escapeHTML(source.title) : link;
-                 sourceListItems += `<li><a href="${link}" target="_blank">${title}</a></li>`;
+                 sourceListItems += `<li id="source-${index + 1}"><a href="${link}" target="_blank">${title}</a></li>`;
             });
             sourcesToggleHtml = `
                 <details style="margin-top: 20px;">

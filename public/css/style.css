@@ -659,12 +659,7 @@ main a:hover {
 }
 
 main sup a { 
-    color: var(--text-primary) !important; 
-    background: var(--primary-gradient);
-    padding: var(--space-1) var(--space-2);
-    border-radius: var(--radius-sm);
-    font-size: var(--text-xs);
-    font-weight: 600;
+    color: var(--accent-cyan);
     text-decoration: none;
 }
 
@@ -878,12 +873,7 @@ main.container a:hover {
 }
 
 main.container sup a { 
-    color: var(--text-primary) !important; 
-    background: var(--primary-gradient);
-    padding: var(--space-1) var(--space-2);
-    border-radius: var(--radius-sm);
-    font-size: var(--text-xs);
-    font-weight: 600;
+    color: var(--accent-cyan);
     text-decoration: none;
 }
 main.container .timestamp { 
