@@ -1277,3 +1277,34 @@ body.sidebar-collapsed #desktop-sidebar-toggle {
     color: var(--text-secondary);
     font-weight: 400;
 }
+
+/* Global scrollbar styling for webkit browsers (Chrome, Safari, Edge) */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--dark-800);
+    border-radius: var(--radius-sm);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--dark-600);
+    border-radius: var(--radius-sm);
+    transition: background var(--transition-normal);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--primary-600);
+}
+
+::-webkit-scrollbar-corner {
+    background: var(--dark-800);
+}
+
+/* Firefox scrollbar styling */
+html {
+    scrollbar-width: thin;
+    scrollbar-color: var(--dark-600) var(--dark-800);
+}
