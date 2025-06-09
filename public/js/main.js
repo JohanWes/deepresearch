@@ -198,7 +198,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const query = queryInput.value.trim();
             if (!query) {
-                resultsDiv.innerHTML = '<p class="placeholder error">Please enter a search query.</p>';
+                resultsDiv.innerHTML = '<div class="results-card"><p class="placeholder error">Please enter a search query.</p></div>';
                 return;
             }
 
@@ -222,7 +222,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (!searchResponse.ok) {
                     const errorData = await searchResponse.json().catch(() => ({ error: 'Failed to parse search error response.' }));
                     if (searchResponse.status === 429) {
-                        showRateLimitPopup(errorData.error, errorData.currentUsage, errorData.limit);
+                        showRateLimitPopup(errorData.error, errorData.currentUsage, errorData.limit, rateLimitPopup, rateLimitMessage, rateLimitCount, queryInput, researchButton);
                         return; // Stop further processing
                     }
                     throw new Error(`Search request failed: ${searchResponse.status} ${searchResponse.statusText} - ${errorData.error || 'Unknown error'}`);
@@ -231,7 +231,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const searchData = await searchResponse.json();
 
                 if (!searchData.urlsToProcess || searchData.urlsToProcess.length === 0) {
-                    resultsDiv.innerHTML = '<p class="placeholder">No relevant sources found to process.</p>';
+                    resultsDiv.innerHTML = '<div class="results-card"><p class="placeholder">No relevant sources found to process.</p></div>';
                     queryInput.disabled = false;
                     researchButton.disabled = false;
                     return;
@@ -259,7 +259,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     throw new Error(`Failed to initiate processing stream: ${processResponse.status} - ${errorText}`);
                 }
 
-                resultsDiv.innerHTML = `<h2>Research Answer for: ${escapeHTML(searchData.query)}</h2><div id="stream-content"></div><div id="share-link-container"></div><div id="sources-container"></div>`;
+                resultsDiv.innerHTML = `<div class="results-card"><h2>Research Answer for: ${escapeHTML(searchData.query)}</h2><div id="stream-content"></div><div id="share-link-container"></div><div id="sources-container"></div></div>`;
                 const streamContentDiv = document.getElementById('stream-content');
                 const shareLinkContainer = document.getElementById('share-link-container');
                 const sourcesContainer = document.getElementById('sources-container');
@@ -355,7 +355,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             } catch (error) {
                 console.error('Error during research process:', error);
-                resultsDiv.innerHTML = `<p class="placeholder error">An error occurred: ${escapeHTML(error.message)}</p>`;
+                resultsDiv.innerHTML = `<div class="results-card"><p class="placeholder error">An error occurred: ${escapeHTML(error.message)}</p></div>`;
                 handleStreamEnd(true, userQuery, currentResearchId, processedSources, resultsDiv, sourcesContainer);
             }
         });
@@ -426,19 +426,19 @@ async function handleStreamEnd(isError = false, query, researchId, sources, resu
     }
 }
 
-function showRateLimitPopup(message, currentUsage, limit) {
-    if (rateLimitPopup && rateLimitMessage && rateLimitCount) {
-        rateLimitMessage.textContent = message;
-        rateLimitCount.textContent = `Requests today: ${currentUsage}/${limit}`;
-        rateLimitPopup.classList.add('show');
-        queryInput.disabled = true;
-        researchButton.disabled = true;
+function showRateLimitPopup(message, currentUsage, limit, popupElement, messageElement, countElement, queryInput, researchButton) {
+    if (popupElement && messageElement && countElement) {
+        messageElement.textContent = message;
+        countElement.textContent = `Requests today: ${currentUsage}/${limit}`;
+        popupElement.classList.add('show');
+        if (queryInput) queryInput.disabled = true;
+        if (researchButton) researchButton.disabled = true;
 
         setTimeout(() => {
-            rateLimitPopup.classList.remove('show');
-            rateLimitPopup.classList.add('fade-out');
+            popupElement.classList.remove('show');
+            popupElement.classList.add('fade-out');
             setTimeout(() => {
-                rateLimitPopup.classList.remove('fade-out');
+                popupElement.classList.remove('fade-out');
             }, 500);
         }, 5000); // Popup disappears after 5 seconds
     }
