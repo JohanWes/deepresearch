@@ -4,7 +4,8 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "node tests/multi-llm.test.js",
+    "test:multi-llm": "node tests/multi-llm.test.js",
     "start": "node server.js",
     "install-service": "node install-service.js",
     "uninstall-service": "node uninstall-service.js"
@@ -20,6 +21,7 @@
     "deepresearch": "file:",
     "dotenv": "^16.4.7",
     "express": "^5.1.0",
+    "node-fetch": "^3.3.2",
     "node-windows": "^1.0.0-beta.8",
     "uuid": "^11.1.0"
   }

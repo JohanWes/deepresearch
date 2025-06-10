@@ -261,39 +261,43 @@ body {
     z-index: 1000;
     transition: transform var(--transition-slow), width var(--transition-slow);
     
-    /* Custom scrollbar styling */
-    scrollbar-width: none; /* Firefox */
-    -ms-overflow-style: none; /* IE/Edge */
+    /* Custom scrollbar styling - always reserve space to prevent layout shift */
+    scrollbar-width: thin; /* Firefox - always thin */
+    scrollbar-color: transparent transparent; /* Firefox - make transparent by default */
 }
 
-/* Hide scrollbar for Chrome, Safari and Opera */
+/* Always show scrollbar space for Chrome, Safari and Opera to prevent layout shift */
 #history-sidebar::-webkit-scrollbar {
-    width: 0px;
+    width: 6px; /* Always reserve 6px space */
     background: transparent;
 }
 
-/* Show stylized scrollbar on hover */
-#history-sidebar:hover {
-    scrollbar-width: thin; /* Firefox */
-}
-
-#history-sidebar:hover::-webkit-scrollbar {
-    width: 6px;
-}
-
-#history-sidebar:hover::-webkit-scrollbar-track {
-    background: rgba(255, 255, 255, 0.05);
+#history-sidebar::-webkit-scrollbar-track {
+    background: transparent; /* Transparent by default */
     border-radius: 3px;
 }
 
-#history-sidebar:hover::-webkit-scrollbar-thumb {
-    background: var(--primary-600);
+#history-sidebar::-webkit-scrollbar-thumb {
+    background: transparent; /* Transparent by default */
     border-radius: 3px;
     transition: background var(--transition-normal);
 }
 
+/* Show scrollbar colors on hover */
+#history-sidebar:hover {
+    scrollbar-color: var(--dark-600) var(--dark-800); /* Firefox */
+}
+
+#history-sidebar:hover::-webkit-scrollbar-track {
+    background: var(--dark-800);
+}
+
+#history-sidebar:hover::-webkit-scrollbar-thumb {
+    background: var(--dark-600);
+}
+
 #history-sidebar:hover::-webkit-scrollbar-thumb:hover {
-    background: var(--primary-700);
+    background: var(--primary-600);
 }
 #history-sidebar h2 {
     font-size: var(--text-xl);
@@ -314,20 +318,18 @@ body {
     margin: 0;
 }
 #history-list li {
-    padding: var(--space-3) var(--space-10); /* Increased right padding for text */
+    padding: var(--space-3) var(--space-10) var(--space-3) var(--space-3);
     margin-bottom: var(--space-3);
     border-radius: var(--radius-lg);
-    cursor: pointer;
     transition: all var(--transition-normal);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
     font-size: var(--text-sm);
     position: relative;
-    padding-right: var(--space-10); /* Ensure enough space for delete button */
     background: rgba(255, 255, 255, 0.02);
     border: 1px solid transparent;
     backdrop-filter: blur(4px);
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-2);
 }
 
 #history-list li:hover {
@@ -459,17 +461,280 @@ main:not(.container) {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;
     min-height: 100vh;
+    padding-top: var(--space-16);
 }
 
 /* Hero Section Styling */
 .hero-section {
     text-align: center;
-    margin-bottom: var(--space-16);
+    margin-bottom: var(--space-8);
     position: relative;
     width: 100%;
     max-width: 800px;
+}
+
+/* Model Selector Styling */
+#model-selector-section {
+    width: 100%;
+    max-width: 960px; /* Increased max-width to accommodate buttons */
+    margin: 0 auto var(--space-10); /* Centering the section itself */
+    text-align: center;
+    overflow: visible; /* Allow hover effect to be visible */
+}
+
+/* Carousel Scrollbar Indicator */
+#carousel-scrollbar {
+    display: none; /* Hidden on mobile by default */
+    width: 200px;
+    height: 6px;
+    background: var(--dark-800);
+    border-radius: var(--radius-full);
+    margin: var(--space-6) auto 0;
+    position: relative;
+    overflow: hidden;
+}
+
+@media (min-width: 769px) {
+    #carousel-scrollbar {
+        display: block;
+    }
+}
+
+#scrollbar-thumb {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    background: var(--primary-600);
+    border-radius: var(--radius-full);
+    transition: all var(--transition-normal);
+    cursor: default;
+}
+
+#scrollbar-thumb:active {
+    cursor: default;
+}
+
+#model-selector-title {
+    font-size: var(--text-lg);
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: var(--space-4);
+    text-align: center;
+}
+
+#model-selector-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between; /* Changed to space-between */
+    width: 100%;
+    margin: 0 auto;
+    position: relative;
+}
+
+/* Carousel Navigation Buttons */
+.scroll-button {
+    display: none;
+}
+
+@media (min-width: 769px) {
+    .scroll-button {
+        display: flex;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: var(--primary-600);
+        border: 3px solid var(--primary-700);
+        align-items: center;
+        justify-content: center;
+        transition: all var(--transition-normal);
+        cursor: pointer;
+        user-select: none;
+        flex-shrink: 0;
+        box-shadow: var(--shadow-lg);
+        font-size: 32px;
+        font-weight: bold;
+        color: white;
+        font-family: Arial, sans-serif;
+    }
+    
+    .scroll-button:hover:not(:disabled) {
+        background: var(--accent-cyan);
+        border-color: var(--accent-cyan);
+        transform: scale(1.1);
+        box-shadow: var(--shadow-xl);
+    }
+    
+    .scroll-button:active {
+        transform: scale(0.95);
+    }
+    
+    .scroll-button:disabled {
+        background: #444444;
+        border-color: #333333;
+        color: #666666;
+        cursor: not-allowed;
+        opacity: 0.5;
+    }
+    
+    .scroll-button:disabled:hover {
+        transform: none;
+        background: #444444;
+        border-color: #333333;
+    }
+}
+
+#model-cards {
+    display: flex;
+    gap: var(--space-4);
+    align-items: stretch;
+    min-height: 120px;
+    transition: transform var(--transition-slow); /* Added transition for smooth scroll */
+}
+
+/* Desktop: Carousel container */
+@media (min-width: 769px) {
+    #model-cards-container { /* New wrapper for overflow */
+        flex-grow: 1;
+        overflow: hidden;
+        margin: 0 var(--space-4);
+    }
+}
+
+/* Mobile: Keep scrollable behavior */
+@media (max-width: 768px) {
+    #model-cards {
+        overflow-x: auto;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+        justify-content: flex-start;
+        padding: var(--space-2) var(--space-8);
+        max-width: none;
+        width: 100%;
+    }
+    
+    #model-cards::-webkit-scrollbar {
+        display: none;
+    }
+}
+
+
+.model-card {
+    width: 220px;
+    flex-shrink: 0;
+    background: var(--glass-bg);
+    backdrop-filter: var(--glass-blur);
+    border: 2px solid var(--glass-border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-4);
+    cursor: pointer;
+    transition: all var(--transition-normal);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    text-align: left;
+}
+
+.model-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: transparent;
+    transition: background var(--transition-normal);
+}
+
+.model-card:hover {
+    border-color: var(--primary-600);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
+.model-card:hover::before {
+    background: var(--primary-gradient);
+}
+
+.model-card.selected {
+    border-color: var(--primary-600);
+    background: rgba(102, 126, 234, 0.1);
+    box-shadow: var(--shadow-glow);
+}
+
+.model-card.selected::before {
+    background: var(--primary-gradient);
+}
+
+.model-name {
+    font-size: var(--text-base);
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: var(--space-1);
+    line-height: 1.3;
+}
+
+.model-provider {
+    font-size: var(--text-sm);
+    color: var(--text-tertiary);
+    margin-bottom: var(--space-3);
+    font-weight: 500;
+}
+
+.model-description {
+    font-size: var(--text-xs);
+    color: var(--text-muted);
+    margin-bottom: var(--space-3);
+    line-height: 1.4;
+    flex-grow: 1;
+}
+
+.model-pricing {
+    display: flex;
+    justify-content: space-between;
+    font-size: var(--text-xs);
+    color: var(--text-tertiary);
+    border-top: 1px solid var(--glass-border);
+    padding-top: var(--space-2);
+}
+
+.model-pricing-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.pricing-label {
+    font-weight: 500;
+    margin-bottom: var(--space-1);
+}
+
+.pricing-value {
+    color: var(--accent-cyan);
+    font-weight: 600;
+}
+
+.model-card.loading {
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+.model-card.loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    margin: -10px 0 0 -10px;
+    border: 2px solid transparent;
+    border-top: 2px solid var(--primary-600);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
 }
 
 main h1 { 
@@ -709,7 +974,7 @@ main sup a {
     height: 100%;
     background: rgba(10, 10, 11, 0.9);
     backdrop-filter: blur(8px);
-    z-index: 1000;
+    z-index: 1002;
     align-items: center;
     justify-content: center;
     text-align: center;
@@ -1061,7 +1326,47 @@ body.sidebar-collapsed #desktop-sidebar-toggle {
         overflow-x: hidden;
     }
     .hero-section {
-        margin-bottom: var(--space-8);
+        margin-bottom: var(--space-6);
+    }
+    
+    /* Mobile Model Selector */
+    #model-selector-section {
+        margin-bottom: var(--space-6);
+        max-width: none;
+    }
+    
+    #model-selector-title {
+        font-size: var(--text-base);
+        margin-bottom: var(--space-3);
+    }
+    
+    #model-selector-container {
+        flex-direction: column;
+        gap: var(--space-3);
+        max-width: none;
+    }
+    
+    .model-card {
+        width: 160px;
+        padding: var(--space-3);
+    }
+    
+    .model-name {
+        font-size: var(--text-sm);
+    }
+    
+    .model-provider {
+        font-size: var(--text-xs);
+        margin-bottom: var(--space-2);
+    }
+    
+    .model-description {
+        font-size: 10px;
+        margin-bottom: var(--space-2);
+    }
+    
+    .model-pricing {
+        font-size: 10px;
     }
     
     main:not(.container) h1 { 

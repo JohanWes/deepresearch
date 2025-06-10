@@ -27,6 +27,26 @@ const HOST = process.env.SERVER_IP || '0.0.0.0';
 const NUM_SOURCES_TO_PROCESS = parseInt(process.env.NUM_SOURCES, 10) || 3;
 const DAILY_REQUEST_LIMIT = parseInt(process.env.DAILY_REQUEST_LIMIT, 10) || 10; // Default to 10 requests
 
+// Parse available models from environment
+let AVAILABLE_MODELS = [];
+try {
+    AVAILABLE_MODELS = JSON.parse(process.env.AVAILABLE_MODELS || '[]');
+} catch (error) {
+    console.error('Error parsing AVAILABLE_MODELS from .env:', error);
+    console.log('Falling back to default model configuration');
+    AVAILABLE_MODELS = [{
+        id: "google/gemini-2.5-flash-preview-05-20:thinking",
+        name: "Gemini 2.5 Flash Thinking", 
+        provider: "Google",
+        inputPrice: 0.15,
+        outputPrice: 0.60,
+        description: "Fast reasoning with thinking mode",
+        isDefault: true
+    }];
+}
+
+const DEFAULT_MODEL = process.env.DEFAULT_MODEL || AVAILABLE_MODELS.find(m => m.isDefault)?.id || AVAILABLE_MODELS[0]?.id;
+
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cookieParser());
@@ -52,7 +72,7 @@ const checkAuthentication = (req, res, next) => {
     if (sessionToken && sessionToken === SESSION_SECRET) {
         next();
     } else {
-        if (req.path.startsWith('/search') || req.path.startsWith('/process-and-summarize')) {
+        if (req.path.startsWith('/search') || req.path.startsWith('/process-and-summarize') || req.path.startsWith('/api/')) {
              console.log(`[Auth] Denied API access to ${req.path} - No valid session cookie.`);
              res.status(401).json({ error: 'Unauthorized. Please log in.' });
         } else {
@@ -180,6 +200,19 @@ app.post('/login', (req, res) => {
     }
 });
 
+// API endpoint to get available models
+app.get('/api/models', checkAuthentication, (req, res) => {
+    try {
+        res.json({
+            models: AVAILABLE_MODELS,
+            defaultModel: DEFAULT_MODEL
+        });
+    } catch (error) {
+        console.error('Error serving models:', error);
+        res.status(500).json({ error: 'Failed to retrieve available models' });
+    }
+});
+
 app.get('/', (req, res) => {
     const sessionToken = req.cookies[SESSION_COOKIE_NAME];
     if (sessionToken && sessionToken === SESSION_SECRET) {
@@ -201,6 +234,12 @@ app.get('/', (req, res) => {
     <body>
         <div id="mobile-header">
              <button id="sidebar-toggle">☰</button>
+             <a href="/" class="home-icon-link" title="Go to Home Page">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                  <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                </svg>
+            </a>
         </div>
         <button id="desktop-sidebar-toggle">☰</button>
         <aside id="history-sidebar">
@@ -209,10 +248,42 @@ app.get('/', (req, res) => {
             </ul>
         </aside>
         <main>
+            <a href="/" class="home-icon-link desktop-only" title="Go to Home Page">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                  <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                </svg>
+            </a>
             <div class="hero-section">
                 <h1>Deep Research</h1>
                 <p class="hero-subtitle">AI-powered research with comprehensive source analysis</p>
             </div>
+            
+            <!-- Model Selector Section -->
+            <div id="model-selector-section">
+                <h3 id="model-selector-title">Choose AI Model</h3>
+                <div id="model-selector-container">
+                    <button class="scroll-button scroll-button-left" id="scroll-left" type="button" aria-label="Scroll left">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
+                            <path fill-rule="evenodd" d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0z"/>
+                        </svg>
+                    </button>
+                    <div id="model-cards-container">
+                        <div id="model-cards">
+                            <!-- Model cards will be populated by JavaScript -->
+                        </div>
+                    </div>
+                    <button class="scroll-button scroll-button-right" id="scroll-right" type="button" aria-label="Scroll right">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
+                            <path fill-rule="evenodd" d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708z"/>
+                        </svg>
+                    </button>
+                </div>
+                <div id="carousel-scrollbar">
+                    <div id="scrollbar-thumb"></div>
+                </div>
+            </div>
+            
             <form id="search-form">
                 <input type="text" id="query-input" name="query" placeholder="Enter your research topic..." required>
                 <button type="submit" id="research-button">Research</button>
@@ -311,7 +382,7 @@ app.post('/search', checkAuthentication, rateLimitMiddleware, async (req, res) =
 });
 
 async function processLlmStreamWithRetry(
-    { query, combinedText, successfulSourceItems, apiKey, modelName, res, sendSseMessage, resultId },
+    { query, combinedText, successfulSourceItems, apiKey, modelName, modelConfig, res, sendSseMessage, resultId },
     attempt = 1,
     maxAttempts = 3,
     retryDelay = 5000
@@ -381,15 +452,15 @@ async function processLlmStreamWithRetry(
 
                 try {
                     let cost = null;
-                    const inputPrice = parseFloat(process.env.OPENROUTER_INPUT_PRICE_PER_MILLION);
-                    const outputPrice = parseFloat(process.env.OPENROUTER_OUTPUT_PRICE_PER_MILLION);
+                    const inputPrice = modelConfig?.inputPrice;
+                    const outputPrice = modelConfig?.outputPrice;
 
-                    if (usageData && usageData.prompt_tokens && usageData.completion_tokens && !isNaN(inputPrice) && !isNaN(outputPrice)) {
+                    if (usageData && usageData.prompt_tokens && usageData.completion_tokens && inputPrice !== undefined && outputPrice !== undefined) {
                         const promptCost = (usageData.prompt_tokens / 1000000) * inputPrice;
                         const completionCost = (usageData.completion_tokens / 1000000) * outputPrice;
                         cost = parseFloat((promptCost + completionCost).toFixed(6));
                     } else {
-                        console.warn('Could not calculate cost: Missing usage data or pricing info in .env');
+                        console.warn('Could not calculate cost: Missing usage data or model pricing info');
                     }
 
                     const resultData = {
@@ -399,7 +470,12 @@ async function processLlmStreamWithRetry(
                         sources: successfulSourceItems,
                         timestamp: new Date().toISOString(),
                         usage: usageData,
-                        cost: cost
+                        cost: cost,
+                        modelUsed: {
+                            id: modelConfig.id,
+                            name: modelConfig.name,
+                            provider: modelConfig.provider
+                        }
                     };
                     const filePath = path.join(dataDir, `${resultId}.json`);
 
@@ -439,7 +515,7 @@ async function processLlmStreamWithRetry(
     } catch (error) {
         if (attempt < maxAttempts) {
             await new Promise(resolve => setTimeout(resolve, retryDelay));
-            return processLlmStreamWithRetry({ query, combinedText, successfulSourceItems, apiKey, modelName, res, sendSseMessage, resultId }, attempt + 1, maxAttempts, retryDelay);
+            return processLlmStreamWithRetry({ query, combinedText, successfulSourceItems, apiKey, modelName, modelConfig, res, sendSseMessage, resultId }, attempt + 1, maxAttempts, retryDelay);
         } else {
             sendSseMessage({ message: `Failed after ${maxAttempts} attempts. Last error: ${error.message || 'Unknown stream error'}` }, 'error');
              if (!res.writableEnded) {
@@ -451,7 +527,7 @@ async function processLlmStreamWithRetry(
 }
 
 app.post('/process-and-summarize', checkAuthentication, async (req, res) => {
-    const { query, urlsToProcess, topItems } = req.body;
+    const { query, urlsToProcess, topItems, selectedModel } = req.body;
 
     if (!query || !urlsToProcess || !Array.isArray(urlsToProcess) || urlsToProcess.length === 0 || !topItems || !Array.isArray(topItems)) {
         res.writeHead(200, {
@@ -508,13 +584,23 @@ app.post('/process-and-summarize', checkAuthentication, async (req, res) => {
         const combinedText = successfulExtractions.join('\n\n---\n\n');
         sendSseMessage({ type: 'sources_processed', count: successfulSourceItems.length, sources: successfulSourceItems }, 'info');
 
+        // Validate and get model configuration
+        const modelToUse = selectedModel || DEFAULT_MODEL;
+        const modelConfig = AVAILABLE_MODELS.find(m => m.id === modelToUse);
+        
+        if (!modelConfig) {
+            sendSseMessage({ message: `Invalid model selected: ${modelToUse}. Using default model.` }, 'info');
+            modelConfig = AVAILABLE_MODELS.find(m => m.isDefault) || AVAILABLE_MODELS[0];
+        }
+
         const resultId = uuidv4();
         await processLlmStreamWithRetry({
             query,
             combinedText,
             successfulSourceItems,
             apiKey: process.env.OPENROUTER_API_KEY,
-            modelName: process.env.OPENROUTER_MODEL,
+            modelName: modelConfig.id,
+            modelConfig: modelConfig,
             res,
             sendSseMessage,
             resultId
@@ -613,6 +699,12 @@ app.get('/research/:id', async (req, res) => {
 
                     ${sourcesToggleHtml}
 
+                    ${result.modelUsed ? `
+                    <div style="margin-top: 20px; font-size: 0.9em; color: #aaa;">
+                        <strong>Model Used:</strong> ${escapeHTML(result.modelUsed.name)} (${escapeHTML(result.modelUsed.provider)})
+                    </div>
+                    ` : ''}
+                    
                     ${result.usage ? `
                     <div style="margin-top: 20px; font-size: 0.9em; color: #aaa;">
                         <strong>Token Usage:</strong><br>

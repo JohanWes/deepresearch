@@ -104,14 +104,34 @@ function renderHistory(historyItems) {
         const li = document.createElement('li');
         li.dataset.id = item.id;
 
+        const contentDiv = document.createElement('div');
+        contentDiv.style.display = 'flex';
+        contentDiv.style.flexDirection = 'column';
+        contentDiv.style.gap = '4px';
+        contentDiv.style.cursor = 'pointer';
+        contentDiv.style.flex = '1';
+        contentDiv.addEventListener('click', () => {
+            window.location.href = `/research/${item.id}`;
+        });
+
         const textSpan = document.createElement('span');
         textSpan.textContent = item.query;
         textSpan.title = item.query;
-        textSpan.style.cursor = 'pointer';
-        textSpan.style.marginRight = '20px';
-        textSpan.addEventListener('click', () => {
-            window.location.href = `/research/${item.id}`;
-        });
+        textSpan.style.fontSize = 'var(--text-sm)';
+        textSpan.style.color = 'var(--text-secondary)';
+
+        const modelSpan = document.createElement('span');
+        if (item.modelUsed) {
+            modelSpan.textContent = `${item.modelUsed.name} (${item.modelUsed.provider})`;
+            modelSpan.style.fontSize = '10px';
+            modelSpan.style.color = 'var(--text-muted)';
+            modelSpan.style.fontStyle = 'italic';
+        }
+
+        contentDiv.appendChild(textSpan);
+        if (item.modelUsed) {
+            contentDiv.appendChild(modelSpan);
+        }
 
         const deleteBtn = document.createElement('span');
         deleteBtn.textContent = 'X';
@@ -119,7 +139,7 @@ function renderHistory(historyItems) {
         deleteBtn.title = 'Delete this item';
         deleteBtn.style.cursor = 'pointer';
 
-        li.appendChild(textSpan);
+        li.appendChild(contentDiv);
         li.appendChild(deleteBtn);
         historyList.appendChild(li);
     });
@@ -138,6 +158,256 @@ async function loadAndDisplayHistory() {
     }
 }
 
+// Model management
+let availableModels = [];
+let selectedModel = null;
+let currentCarouselIndex = 0;
+
+async function loadAvailableModels() {
+    try {
+        const response = await fetch('/api/models');
+        if (!response.ok) {
+            throw new Error(`Failed to load models: ${response.status}`);
+        }
+        const data = await response.json();
+        availableModels = data.models;
+        
+        // Load saved model preference or use default
+        const savedModel = localStorage.getItem('preferredLLMModel');
+        selectedModel = savedModel && availableModels.find(m => m.id === savedModel) 
+            ? savedModel 
+            : data.defaultModel;
+        
+        renderModelSelector();
+    } catch (error) {
+        console.error('Error loading models:', error);
+        // Fallback to basic functionality
+        selectedModel = null;
+    }
+}
+
+function renderModelSelector() {
+    const modelCardsContainer = document.getElementById('model-cards');
+    if (!modelCardsContainer || !availableModels.length) return;
+
+    currentCarouselIndex = 0;
+
+    if (window.innerWidth > 768) {
+        renderDesktopCarousel();
+        renderScrollbar(); // New function
+    } else {
+        renderMobileView();
+    }
+
+    updateCarouselButtons();
+    updateCarouselTransform(); // Initial position update
+}
+
+function renderDesktopCarousel() {
+    const modelCardsContainer = document.getElementById('model-cards');
+    modelCardsContainer.innerHTML = '';
+    
+    // Render all cards for desktop, scrolling is handled by transform
+    availableModels.forEach(model => {
+        const card = createModelCard(model);
+        modelCardsContainer.appendChild(card);
+    });
+}
+
+function renderMobileView() {
+    const modelCardsContainer = document.getElementById('model-cards');
+    modelCardsContainer.innerHTML = '';
+    
+    // Render all cards directly for mobile scrolling
+    availableModels.forEach(model => {
+        const card = createModelCard(model);
+        modelCardsContainer.appendChild(card);
+    });
+}
+
+function createModelCard(model) {
+    const card = document.createElement('div');
+    card.className = `model-card ${model.id === selectedModel ? 'selected' : ''}`;
+    card.dataset.modelId = model.id;
+    
+    card.innerHTML = `
+        <div class="model-name">${escapeHTML(model.name)}</div>
+        <div class="model-provider">${escapeHTML(model.provider)}</div>
+        <div class="model-description">${escapeHTML(model.description)}</div>
+        <div class="model-pricing">
+            <div class="model-pricing-item">
+                <div class="pricing-label">Input</div>
+                <div class="pricing-value">$${model.inputPrice.toFixed(2)}</div>
+            </div>
+            <div class="model-pricing-item">
+                <div class="pricing-label">Output</div>
+                <div class="pricing-value">$${model.outputPrice.toFixed(2)}</div>
+            </div>
+        </div>
+    `;
+    
+    card.addEventListener('click', () => selectModel(model.id));
+    return card;
+}
+
+function updateCarouselTransform() {
+    if (window.innerWidth <= 768) return;
+
+    const modelCards = document.getElementById('model-cards');
+    if (!modelCards) return;
+
+    const cardWidth = 220; // From CSS
+    const gap = 16; // From CSS var(--space-4)
+    const scrollAmount = currentCarouselIndex * (cardWidth + gap);
+
+    modelCards.style.transform = `translateX(-${scrollAmount}px)`;
+    updateScrollbarThumb();
+}
+
+function updateCarouselButtons() {
+    const leftBtn = document.getElementById('scroll-left');
+    const rightBtn = document.getElementById('scroll-right');
+
+    if (!leftBtn || !rightBtn) return;
+
+    if (window.innerWidth > 768) {
+        const container = document.getElementById('model-cards-container');
+        const content = document.getElementById('model-cards');
+        if (!container || !content) return;
+
+        const maxScroll = content.scrollWidth - container.clientWidth;
+        const currentScroll = currentCarouselIndex * (220 + 16);
+
+        leftBtn.disabled = currentCarouselIndex === 0;
+        rightBtn.disabled = currentScroll >= maxScroll;
+
+    } else {
+        // Hide buttons on mobile
+        leftBtn.style.display = 'none';
+        rightBtn.style.display = 'none';
+    }
+}
+
+function setupScrollButtons() {
+    const scrollLeftBtn = document.getElementById('scroll-left');
+    const scrollRightBtn = document.getElementById('scroll-right');
+    
+    if (!scrollLeftBtn || !scrollRightBtn) return;
+    
+    // Set arrow text content directly
+    scrollLeftBtn.innerHTML = '‹';
+    scrollRightBtn.innerHTML = '›';
+    
+    scrollLeftBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        navigateCarousel('left');
+    });
+    
+    scrollRightBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        navigateCarousel('right');
+    });
+}
+
+function navigateCarousel(direction) {
+    if (window.innerWidth <= 768) return;
+
+    const container = document.getElementById('model-cards-container');
+    const content = document.getElementById('model-cards');
+    if (!container || !content) return;
+
+    const containerWidth = container.clientWidth;
+    const contentWidth = content.scrollWidth;
+    const maxScrollIndex = Math.ceil((contentWidth - containerWidth) / (220 + 16));
+
+    if (direction === 'left') {
+        currentCarouselIndex = Math.max(0, currentCarouselIndex - 1);
+    } else if (direction === 'right') {
+        currentCarouselIndex = Math.min(maxScrollIndex, currentCarouselIndex + 1);
+    }
+
+    updateCarouselTransform();
+    updateCarouselButtons();
+}
+
+function renderScrollbar() {
+    if (window.innerWidth <= 768) return;
+    updateScrollbarThumb();
+}
+
+function updateScrollbarThumb() {
+    if (window.innerWidth <= 768) return;
+
+    const thumb = document.getElementById('scrollbar-thumb');
+    const container = document.getElementById('model-cards-container');
+    const content = document.getElementById('model-cards');
+    const scrollbar = document.getElementById('carousel-scrollbar');
+
+    if (!thumb || !container || !content || !scrollbar) return;
+
+    const contentWidth = content.scrollWidth;
+    const containerWidth = container.clientWidth;
+
+    if (contentWidth <= containerWidth) {
+        scrollbar.style.display = 'none';
+        return;
+    }
+    
+    scrollbar.style.display = 'block';
+
+    const thumbWidth = (containerWidth / contentWidth) * 100;
+    thumb.style.width = `${thumbWidth}%`;
+
+    const scrollPercentage = (currentCarouselIndex * (220 + 16)) / (contentWidth - containerWidth);
+    const thumbPosition = scrollPercentage * (100 - thumbWidth);
+    thumb.style.left = `${thumbPosition}%`;
+}
+
+function selectModel(modelId) {
+    selectedModel = modelId;
+    localStorage.setItem('preferredLLMModel', modelId);
+    
+    // Update UI
+    document.querySelectorAll('.model-card').forEach(card => {
+        card.classList.toggle('selected', card.dataset.modelId === modelId);
+    });
+    
+    // Ensure selected model is visible in carousel
+    ensureModelVisible(modelId);
+}
+
+function ensureModelVisible(modelId) {
+    if (window.innerWidth <= 768) return;
+
+    const modelIndex = availableModels.findIndex(m => m.id === modelId);
+    if (modelIndex === -1) return;
+
+    const container = document.getElementById('model-cards-container');
+    if (!container) return;
+
+    const cardWidth = 220;
+    const gap = 16;
+    const cardFullWidth = cardWidth + gap;
+
+    const containerWidth = container.clientWidth;
+    const currentScroll = currentCarouselIndex * cardFullWidth;
+
+    const modelLeft = modelIndex * cardFullWidth;
+    const modelRight = modelLeft + cardWidth;
+
+    if (modelLeft < currentScroll) {
+        currentCarouselIndex = modelIndex;
+    } else if (modelRight > currentScroll + containerWidth) {
+        const newScrollLeft = modelRight - containerWidth;
+        currentCarouselIndex = Math.ceil(newScrollLeft / cardFullWidth);
+    }
+    
+    updateCarouselTransform();
+    updateCarouselButtons();
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     const searchForm = document.getElementById('search-form');
     const queryInput = document.getElementById('query-input');
@@ -154,7 +424,19 @@ document.addEventListener('DOMContentLoaded', () => {
     const rateLimitMessage = document.getElementById('rate-limit-message');
     const rateLimitCount = document.getElementById('rate-limit-count');
 
+    // Load models and history
+    loadAvailableModels();
     loadAndDisplayHistory();
+    
+    // Setup scroll buttons
+    setupScrollButtons();
+    
+    // Handle window resize for responsive carousel
+    window.addEventListener('resize', () => {
+        if (availableModels.length > 0) {
+            renderModelSelector();
+        }
+    });
 
     // Mobile sidebar toggle
     if (sidebarToggle && bodyElement) {
@@ -259,7 +541,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     body: JSON.stringify({
                         query: searchData.query,
                         urlsToProcess: searchData.urlsToProcess,
-                        topItems: searchData.topItems
+                        topItems: searchData.topItems,
+                        selectedModel: selectedModel
                     }),
                 });
 
@@ -422,10 +705,16 @@ async function handleStreamEnd(isError = false, query, researchId, sources, resu
 
     if (!isError && researchId && query) {
         try {
+            const selectedModelConfig = availableModels.find(m => m.id === selectedModel);
             const researchEntry = {
                 id: researchId,
                 query: query,
-                timestamp: new Date().toISOString()
+                timestamp: new Date().toISOString(),
+                modelUsed: selectedModelConfig ? {
+                    id: selectedModelConfig.id,
+                    name: selectedModelConfig.name,
+                    provider: selectedModelConfig.provider
+                } : null
             };
             await addResearchToDB(researchEntry);
             await loadAndDisplayHistory();
