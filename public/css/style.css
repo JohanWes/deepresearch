@@ -261,39 +261,43 @@ body {
     z-index: 1000;
     transition: transform var(--transition-slow), width var(--transition-slow);
     
-    /* Custom scrollbar styling */
-    scrollbar-width: none; /* Firefox */
-    -ms-overflow-style: none; /* IE/Edge */
+    /* Custom scrollbar styling - always reserve space to prevent layout shift */
+    scrollbar-width: thin; /* Firefox - always thin */
+    scrollbar-color: transparent transparent; /* Firefox - make transparent by default */
 }
 
-/* Hide scrollbar for Chrome, Safari and Opera */
+/* Always show scrollbar space for Chrome, Safari and Opera to prevent layout shift */
 #history-sidebar::-webkit-scrollbar {
-    width: 0px;
+    width: 6px; /* Always reserve 6px space */
     background: transparent;
 }
 
-/* Show stylized scrollbar on hover */
-#history-sidebar:hover {
-    scrollbar-width: thin; /* Firefox */
-}
-
-#history-sidebar:hover::-webkit-scrollbar {
-    width: 6px;
-}
-
-#history-sidebar:hover::-webkit-scrollbar-track {
-    background: rgba(255, 255, 255, 0.05);
+#history-sidebar::-webkit-scrollbar-track {
+    background: transparent; /* Transparent by default */
     border-radius: 3px;
 }
 
-#history-sidebar:hover::-webkit-scrollbar-thumb {
-    background: var(--primary-600);
+#history-sidebar::-webkit-scrollbar-thumb {
+    background: transparent; /* Transparent by default */
     border-radius: 3px;
     transition: background var(--transition-normal);
 }
 
+/* Show scrollbar colors on hover */
+#history-sidebar:hover {
+    scrollbar-color: var(--dark-600) var(--dark-800); /* Firefox */
+}
+
+#history-sidebar:hover::-webkit-scrollbar-track {
+    background: var(--dark-800);
+}
+
+#history-sidebar:hover::-webkit-scrollbar-thumb {
+    background: var(--dark-600);
+}
+
 #history-sidebar:hover::-webkit-scrollbar-thumb:hover {
-    background: var(--primary-700);
+    background: var(--primary-600);
 }
 #history-sidebar h2 {
     font-size: var(--text-xl);
@@ -457,8 +461,9 @@ main:not(.container) {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;
     min-height: 100vh;
+    padding-top: var(--space-16);
 }
 
 /* Hero Section Styling */
@@ -950,7 +955,7 @@ main sup a {
     height: 100%;
     background: rgba(10, 10, 11, 0.9);
     backdrop-filter: blur(8px);
-    z-index: 1000;
+    z-index: 1002;
     align-items: center;
     justify-content: center;
     text-align: center;
