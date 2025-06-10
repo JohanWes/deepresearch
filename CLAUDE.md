@@ -21,7 +21,8 @@ npm run uninstall-service   # Uninstall Windows service (requires admin)
 1. Copy `.env.example` to `.env`
 2. Configure required environment variables:
    - `IP_ADDRESS`, `PORT`: Server configuration
-   - `OPENROUTER_API_KEY`, `OPENROUTER_API_MODEL`: LLM API access
+   - `OPENROUTER_API_KEY`: OpenRouter API access key
+   - `AVAILABLE_MODELS`: JSON array of available LLM models with pricing
    - `GOOGLE_API_KEY`, `GOOGLE_CX`: Google Custom Search API
    - `SESSION_SECRET_TOKEN`: Authentication token
    - `NUM_SOURCES`: Number of sources to search
@@ -41,8 +42,9 @@ Deep Research is a monolithic Node.js web application using Express.js that perf
 - **Authentication**: Session-based middleware protecting all routes
 - **Real-time Communication**: Server-Sent Events (SSE) for streaming LLM responses
 - **Data Persistence**: File-based JSON storage (no database)
-- **Client State**: IndexedDB for history persistence
+- **Client State**: IndexedDB for history persistence, localStorage for model selection
 - **Rate Limiting**: Daily request limits tracked in `data/usage.json`
+- **Multi-LLM Support**: Dynamic model selection with carousel UI and cost tracking
 
 ### Module Responsibilities
 - **`server.js`**: Main Express server, routing, authentication, SSE streaming
@@ -69,7 +71,12 @@ Deep Research is a monolithic Node.js web application using Express.js that perf
   "summary": "LLM generated summary",
   "sources": [{"title": "", "url": "", "content": ""}],
   "timestamp": "ISO date",
-  "cost": number
+  "cost": number,
+  "model": {
+    "id": "model-id",
+    "name": "Model Name",
+    "provider": "Provider"
+  }
 }
 ```
 

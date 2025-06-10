@@ -7,9 +7,11 @@ A web application that allows users to quickly search the web using a built-in c
 - Web crawling using Google Custom Search API
 - Content extraction from various sources
 - AI-powered summarization and answer generation
+- **Multi-LLM Support**: Configurable AI model selection with multiple providers
+- **Model Selection UI**: Responsive carousel interface for desktop and mobile
 - Real-time streaming of AI responses
 - Shareable research results
-- History tracking
+- History tracking with model information
 - Responsive design for desktop and mobile
 - Session-based authentication
 
