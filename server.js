@@ -30,17 +30,32 @@ const DAILY_REQUEST_LIMIT = parseInt(process.env.DAILY_REQUEST_LIMIT, 10) || 10;
 // Parse available models from environment
 let AVAILABLE_MODELS = [];
 try {
-    AVAILABLE_MODELS = JSON.parse(process.env.AVAILABLE_MODELS || '[]');
+    const envModels = process.env.AVAILABLE_MODELS || '[]';
+    AVAILABLE_MODELS = JSON.parse(envModels);
+    
+    // Validate that we have at least one model
+    if (!Array.isArray(AVAILABLE_MODELS) || AVAILABLE_MODELS.length === 0) {
+        throw new Error('AVAILABLE_MODELS must be a non-empty array');
+    }
+    
+    // Validate model structure
+    for (const model of AVAILABLE_MODELS) {
+        if (!model.id || !model.name || !model.provider || typeof model.inputPrice !== 'number' || typeof model.outputPrice !== 'number') {
+            throw new Error('Invalid model structure found in AVAILABLE_MODELS');
+        }
+    }
+    
+    console.log(`✓ Successfully loaded ${AVAILABLE_MODELS.length} models from environment configuration`);
 } catch (error) {
-    console.error('Error parsing AVAILABLE_MODELS from .env:', error);
-    console.log('Falling back to default model configuration');
+    console.error('❌ Error parsing AVAILABLE_MODELS from .env:', error.message);
+    console.log('⚠️  Falling back to default model configuration');
     AVAILABLE_MODELS = [{
         id: "google/gemini-2.5-flash-preview-05-20:thinking",
         name: "Gemini 2.5 Flash Thinking", 
         provider: "Google",
         inputPrice: 0.15,
         outputPrice: 0.60,
-        description: "Fast reasoning with thinking mode",
+        description: "Thinking mode, best value",
         isDefault: true
     }];
 }
