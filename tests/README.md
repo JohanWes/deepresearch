@@ -2,6 +2,26 @@
 
 This directory contains tests for the Deep Research application.
 
+## Mobile Carousel Touch Tests
+
+### Running the Mobile Carousel Tests
+
+```bash
+# Run the mobile carousel touch test suite
+node tests/mobile-carousel.test.js
+```
+
+### What the tests cover:
+
+1. **CSS Mobile Touch Action** - Validates CSS allows horizontal touch movement
+2. **Carousel HTML Structure** - Ensures required DOM elements exist
+3. **JavaScript Touch Functions** - Confirms touch handlers are implemented
+4. **Touch Event Binding** - Verifies events are properly bound
+5. **Constraint Logic Simplicity** - Checks boundary logic is simple and correct
+6. **Mobile Specific CSS** - Validates mobile-responsive styles
+7. **Transition Handling** - Ensures smooth CSS transitions during touch
+8. **Boundary Logic** - Tests swipe boundaries prevent over-scrolling
+
 ## Multi-LLM Feature Tests
 
 ### Running the Multi-LLM Tests

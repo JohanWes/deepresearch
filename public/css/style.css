@@ -603,20 +603,30 @@ main:not(.container) {
     }
 }
 
-/* Mobile: Keep scrollable behavior */
+/* Mobile: Transform-based carousel (no scroll) */
 @media (max-width: 768px) {
     #model-cards {
-        overflow-x: auto;
-        scrollbar-width: none;
-        -ms-overflow-style: none;
+        overflow: visible;
         justify-content: flex-start;
         padding: var(--space-2) var(--space-8);
         max-width: none;
-        width: 100%;
+        width: auto;
+        cursor: grab;
+        touch-action: pan-x;
     }
     
-    #model-cards::-webkit-scrollbar {
-        display: none;
+    #model-cards:active {
+        cursor: grabbing;
+    }
+    
+    #model-cards.touching {
+        transition: none;
+    }
+    
+    #model-selector-container {
+        overflow: hidden;
+        width: 100%;
+        position: relative;
     }
 }
 
@@ -637,6 +647,10 @@ main:not(.container) {
     flex-direction: column;
     justify-content: space-between;
     text-align: left;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
 }
 
 .model-card::before {
@@ -1349,6 +1363,12 @@ body.sidebar-collapsed #desktop-sidebar-toggle {
     .model-card {
         width: 160px;
         padding: var(--space-3);
+        touch-action: manipulation;
+    }
+    
+    .model-card:active {
+        transform: scale(0.98);
+        transition: transform 0.1s ease;
     }
     
     .model-name {
