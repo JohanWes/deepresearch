@@ -478,10 +478,43 @@ main:not(.container) {
 /* Model Selector Styling */
 #model-selector-section {
     width: 100%;
-    max-width: 800px;
-    margin-bottom: var(--space-10);
+    max-width: 960px; /* Increased max-width to accommodate buttons */
+    margin: 0 auto var(--space-10); /* Centering the section itself */
     text-align: center;
-    overflow: visible;
+    overflow: visible; /* Allow hover effect to be visible */
+}
+
+/* Carousel Scrollbar Indicator */
+#carousel-scrollbar {
+    display: none; /* Hidden on mobile by default */
+    width: 200px;
+    height: 6px;
+    background: var(--dark-800);
+    border-radius: var(--radius-full);
+    margin: var(--space-6) auto 0;
+    position: relative;
+    overflow: hidden;
+}
+
+@media (min-width: 769px) {
+    #carousel-scrollbar {
+        display: block;
+    }
+}
+
+#scrollbar-thumb {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    background: var(--primary-600);
+    border-radius: var(--radius-full);
+    transition: all var(--transition-normal);
+    cursor: default;
+}
+
+#scrollbar-thumb:active {
+    cursor: default;
 }
 
 #model-selector-title {
@@ -495,11 +528,10 @@ main:not(.container) {
 #model-selector-container {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: space-between; /* Changed to space-between */
     width: 100%;
-    max-width: 800px;
     margin: 0 auto;
-    gap: var(--space-4);
+    position: relative;
 }
 
 /* Carousel Navigation Buttons */
@@ -510,24 +542,29 @@ main:not(.container) {
 @media (min-width: 769px) {
     .scroll-button {
         display: flex;
-        width: 48px;
-        height: 48px;
+        width: 60px;
+        height: 60px;
         border-radius: 50%;
-        background: var(--glass-bg);
-        backdrop-filter: var(--glass-blur);
-        border: 1px solid var(--glass-border);
+        background: var(--primary-600);
+        border: 3px solid var(--primary-700);
         align-items: center;
         justify-content: center;
         transition: all var(--transition-normal);
         cursor: pointer;
         user-select: none;
         flex-shrink: 0;
+        box-shadow: var(--shadow-lg);
+        font-size: 32px;
+        font-weight: bold;
+        color: white;
+        font-family: Arial, sans-serif;
     }
     
-    .scroll-button:hover {
-        border-color: var(--primary-600);
-        background: rgba(102, 126, 234, 0.1);
-        transform: scale(1.05);
+    .scroll-button:hover:not(:disabled) {
+        background: var(--accent-cyan);
+        border-color: var(--accent-cyan);
+        transform: scale(1.1);
+        box-shadow: var(--shadow-xl);
     }
     
     .scroll-button:active {
@@ -535,52 +572,34 @@ main:not(.container) {
     }
     
     .scroll-button:disabled {
-        opacity: 0.3;
+        background: #444444;
+        border-color: #333333;
+        color: #666666;
         cursor: not-allowed;
-        border-color: var(--glass-border);
-        background: var(--glass-bg);
+        opacity: 0.5;
     }
     
     .scroll-button:disabled:hover {
         transform: none;
-        border-color: var(--glass-border);
-        background: var(--glass-bg);
-    }
-    
-    .scroll-button svg {
-        width: 20px;
-        height: 20px;
-        fill: var(--text-secondary);
-        transition: fill var(--transition-normal);
-    }
-    
-    .scroll-button:hover:not(:disabled) svg {
-        fill: var(--primary-600);
+        background: #444444;
+        border-color: #333333;
     }
 }
 
 #model-cards {
     display: flex;
     gap: var(--space-4);
-    justify-content: center;
     align-items: stretch;
     min-height: 120px;
-    overflow: hidden;
+    transition: transform var(--transition-slow); /* Added transition for smooth scroll */
 }
 
-/* Desktop: Show exactly 3 cards in carousel */
+/* Desktop: Carousel container */
 @media (min-width: 769px) {
-    #model-cards {
-        width: 688px; /* Exactly 3 cards × 220px + 2 gaps × 16px = 688px */
-        position: relative;
-        flex-shrink: 0;
-    }
-    
-    .model-cards-track {
-        display: flex;
-        gap: var(--space-4);
-        transition: transform var(--transition-slow);
-        width: calc(5 * 220px + 4 * var(--space-4)); /* All 5 cards width */
+    #model-cards-container { /* New wrapper for overflow */
+        flex-grow: 1;
+        overflow: hidden;
+        margin: 0 var(--space-4);
     }
 }
 

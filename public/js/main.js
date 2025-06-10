@@ -189,35 +189,29 @@ async function loadAvailableModels() {
 function renderModelSelector() {
     const modelCardsContainer = document.getElementById('model-cards');
     if (!modelCardsContainer || !availableModels.length) return;
-    
+
+    currentCarouselIndex = 0;
+
     if (window.innerWidth > 768) {
-        renderCarouselView();
+        renderDesktopCarousel();
+        renderScrollbar(); // New function
     } else {
         renderMobileView();
     }
-    
+
     updateCarouselButtons();
+    updateCarouselTransform(); // Initial position update
 }
 
-function renderCarouselView() {
+function renderDesktopCarousel() {
     const modelCardsContainer = document.getElementById('model-cards');
     modelCardsContainer.innerHTML = '';
     
-    // Create a track container for the carousel
-    const track = document.createElement('div');
-    track.className = 'model-cards-track';
-    track.style.display = 'flex';
-    track.style.gap = 'var(--space-4)';
-    track.style.transition = 'transform var(--transition-slow)';
-    
-    // Render all cards in the track
+    // Render all cards for desktop, scrolling is handled by transform
     availableModels.forEach(model => {
         const card = createModelCard(model);
-        track.appendChild(card);
+        modelCardsContainer.appendChild(card);
     });
-    
-    modelCardsContainer.appendChild(track);
-    updateCarouselPosition();
 }
 
 function renderMobileView() {
@@ -256,30 +250,41 @@ function createModelCard(model) {
     return card;
 }
 
-function updateCarouselPosition() {
-    if (window.innerWidth <= 768) return; // Mobile doesn't use carousel
-    
-    const track = document.querySelector('.model-cards-track');
-    if (!track) return;
-    
-    const cardWidth = 220; // Card width
-    const gap = 16; // Gap between cards (var(--space-4))
-    const offset = currentCarouselIndex * (cardWidth + gap);
-    
-    track.style.transform = `translateX(-${offset}px)`;
+function updateCarouselTransform() {
+    if (window.innerWidth <= 768) return;
+
+    const modelCards = document.getElementById('model-cards');
+    if (!modelCards) return;
+
+    const cardWidth = 220; // From CSS
+    const gap = 16; // From CSS var(--space-4)
+    const scrollAmount = currentCarouselIndex * (cardWidth + gap);
+
+    modelCards.style.transform = `translateX(-${scrollAmount}px)`;
+    updateScrollbarThumb();
 }
 
 function updateCarouselButtons() {
     const leftBtn = document.getElementById('scroll-left');
     const rightBtn = document.getElementById('scroll-right');
-    
+
     if (!leftBtn || !rightBtn) return;
-    
-    // Desktop only
+
     if (window.innerWidth > 768) {
-        const maxIndex = Math.max(0, availableModels.length - 3); // Show 3 cards
+        const container = document.getElementById('model-cards-container');
+        const content = document.getElementById('model-cards');
+        if (!container || !content) return;
+
+        const maxScroll = content.scrollWidth - container.clientWidth;
+        const currentScroll = currentCarouselIndex * (220 + 16);
+
         leftBtn.disabled = currentCarouselIndex === 0;
-        rightBtn.disabled = currentCarouselIndex >= maxIndex;
+        rightBtn.disabled = currentScroll >= maxScroll;
+
+    } else {
+        // Hide buttons on mobile
+        leftBtn.style.display = 'none';
+        rightBtn.style.display = 'none';
     }
 }
 
@@ -288,6 +293,10 @@ function setupScrollButtons() {
     const scrollRightBtn = document.getElementById('scroll-right');
     
     if (!scrollLeftBtn || !scrollRightBtn) return;
+    
+    // Set arrow text content directly
+    scrollLeftBtn.innerHTML = '‹';
+    scrollRightBtn.innerHTML = '›';
     
     scrollLeftBtn.addEventListener('click', (e) => {
         e.preventDefault();
@@ -303,18 +312,57 @@ function setupScrollButtons() {
 }
 
 function navigateCarousel(direction) {
-    if (window.innerWidth <= 768) return; // Mobile doesn't use carousel navigation
-    
-    const maxIndex = Math.max(0, availableModels.length - 3);
-    
-    if (direction === 'left' && currentCarouselIndex > 0) {
-        currentCarouselIndex--;
-    } else if (direction === 'right' && currentCarouselIndex < maxIndex) {
-        currentCarouselIndex++;
+    if (window.innerWidth <= 768) return;
+
+    const container = document.getElementById('model-cards-container');
+    const content = document.getElementById('model-cards');
+    if (!container || !content) return;
+
+    const containerWidth = container.clientWidth;
+    const contentWidth = content.scrollWidth;
+    const maxScrollIndex = Math.ceil((contentWidth - containerWidth) / (220 + 16));
+
+    if (direction === 'left') {
+        currentCarouselIndex = Math.max(0, currentCarouselIndex - 1);
+    } else if (direction === 'right') {
+        currentCarouselIndex = Math.min(maxScrollIndex, currentCarouselIndex + 1);
+    }
+
+    updateCarouselTransform();
+    updateCarouselButtons();
+}
+
+function renderScrollbar() {
+    if (window.innerWidth <= 768) return;
+    updateScrollbarThumb();
+}
+
+function updateScrollbarThumb() {
+    if (window.innerWidth <= 768) return;
+
+    const thumb = document.getElementById('scrollbar-thumb');
+    const container = document.getElementById('model-cards-container');
+    const content = document.getElementById('model-cards');
+    const scrollbar = document.getElementById('carousel-scrollbar');
+
+    if (!thumb || !container || !content || !scrollbar) return;
+
+    const contentWidth = content.scrollWidth;
+    const containerWidth = container.clientWidth;
+
+    if (contentWidth <= containerWidth) {
+        scrollbar.style.display = 'none';
+        return;
     }
     
-    updateCarouselPosition();
-    updateCarouselButtons();
+    scrollbar.style.display = 'block';
+
+    const thumbWidth = (containerWidth / contentWidth) * 100;
+    thumb.style.width = `${thumbWidth}%`;
+
+    const scrollPercentage = (currentCarouselIndex * (220 + 16)) / (contentWidth - containerWidth);
+    const thumbPosition = scrollPercentage * (100 - thumbWidth);
+    thumb.style.left = `${thumbPosition}%`;
 }
 
 function selectModel(modelId) {
@@ -331,24 +379,32 @@ function selectModel(modelId) {
 }
 
 function ensureModelVisible(modelId) {
-    if (window.innerWidth <= 768) return; // Mobile doesn't need this
-    
+    if (window.innerWidth <= 768) return;
+
     const modelIndex = availableModels.findIndex(m => m.id === modelId);
     if (modelIndex === -1) return;
-    
-    // Calculate which carousel position shows this model
-    const maxIndex = Math.max(0, availableModels.length - 3);
-    
-    // If model is not in current view (indices currentCarouselIndex to currentCarouselIndex + 2)
-    if (modelIndex < currentCarouselIndex) {
-        // Model is to the left, move carousel left
+
+    const container = document.getElementById('model-cards-container');
+    if (!container) return;
+
+    const cardWidth = 220;
+    const gap = 16;
+    const cardFullWidth = cardWidth + gap;
+
+    const containerWidth = container.clientWidth;
+    const currentScroll = currentCarouselIndex * cardFullWidth;
+
+    const modelLeft = modelIndex * cardFullWidth;
+    const modelRight = modelLeft + cardWidth;
+
+    if (modelLeft < currentScroll) {
         currentCarouselIndex = modelIndex;
-    } else if (modelIndex >= currentCarouselIndex + 3) {
-        // Model is to the right, move carousel right
-        currentCarouselIndex = Math.min(maxIndex, modelIndex - 2);
+    } else if (modelRight > currentScroll + containerWidth) {
+        const newScrollLeft = modelRight - containerWidth;
+        currentCarouselIndex = Math.ceil(newScrollLeft / cardFullWidth);
     }
     
-    updateCarouselPosition();
+    updateCarouselTransform();
     updateCarouselButtons();
 }
 
