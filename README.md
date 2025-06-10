@@ -2,6 +2,8 @@
 
 A web application that allows users to quickly search the web using a built-in crawler. The application collects news, research papers, and credible sources, then uses an AI/LLM to summarize the information and generate a comprehensive research answer with sources.
 
+![image](https://github.com/user-attachments/assets/34a8bf52-506a-4494-b509-6f5198b274b5)
+
 ## Features
 
 - Web crawling using Google Custom Search API
