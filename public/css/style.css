@@ -314,20 +314,18 @@ body {
     margin: 0;
 }
 #history-list li {
-    padding: var(--space-3) var(--space-10); /* Increased right padding for text */
+    padding: var(--space-3) var(--space-10) var(--space-3) var(--space-3);
     margin-bottom: var(--space-3);
     border-radius: var(--radius-lg);
-    cursor: pointer;
     transition: all var(--transition-normal);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
     font-size: var(--text-sm);
     position: relative;
-    padding-right: var(--space-10); /* Ensure enough space for delete button */
     background: rgba(255, 255, 255, 0.02);
     border: 1px solid transparent;
     backdrop-filter: blur(4px);
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-2);
 }
 
 #history-list li:hover {
@@ -466,10 +464,253 @@ main:not(.container) {
 /* Hero Section Styling */
 .hero-section {
     text-align: center;
-    margin-bottom: var(--space-16);
+    margin-bottom: var(--space-8);
     position: relative;
     width: 100%;
     max-width: 800px;
+}
+
+/* Model Selector Styling */
+#model-selector-section {
+    width: 100%;
+    max-width: 800px;
+    margin-bottom: var(--space-10);
+    text-align: center;
+    overflow: visible;
+}
+
+#model-selector-title {
+    font-size: var(--text-lg);
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: var(--space-4);
+    text-align: center;
+}
+
+#model-selector-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto;
+    gap: var(--space-4);
+}
+
+/* Carousel Navigation Buttons */
+.scroll-button {
+    display: none;
+}
+
+@media (min-width: 769px) {
+    .scroll-button {
+        display: flex;
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        background: var(--glass-bg);
+        backdrop-filter: var(--glass-blur);
+        border: 1px solid var(--glass-border);
+        align-items: center;
+        justify-content: center;
+        transition: all var(--transition-normal);
+        cursor: pointer;
+        user-select: none;
+        flex-shrink: 0;
+    }
+    
+    .scroll-button:hover {
+        border-color: var(--primary-600);
+        background: rgba(102, 126, 234, 0.1);
+        transform: scale(1.05);
+    }
+    
+    .scroll-button:active {
+        transform: scale(0.95);
+    }
+    
+    .scroll-button:disabled {
+        opacity: 0.3;
+        cursor: not-allowed;
+        border-color: var(--glass-border);
+        background: var(--glass-bg);
+    }
+    
+    .scroll-button:disabled:hover {
+        transform: none;
+        border-color: var(--glass-border);
+        background: var(--glass-bg);
+    }
+    
+    .scroll-button svg {
+        width: 20px;
+        height: 20px;
+        fill: var(--text-secondary);
+        transition: fill var(--transition-normal);
+    }
+    
+    .scroll-button:hover:not(:disabled) svg {
+        fill: var(--primary-600);
+    }
+}
+
+#model-cards {
+    display: flex;
+    gap: var(--space-4);
+    justify-content: center;
+    align-items: stretch;
+    min-height: 120px;
+    overflow: hidden;
+}
+
+/* Desktop: Show exactly 3 cards in carousel */
+@media (min-width: 769px) {
+    #model-cards {
+        width: 688px; /* Exactly 3 cards × 220px + 2 gaps × 16px = 688px */
+        position: relative;
+        flex-shrink: 0;
+    }
+    
+    .model-cards-track {
+        display: flex;
+        gap: var(--space-4);
+        transition: transform var(--transition-slow);
+        width: calc(5 * 220px + 4 * var(--space-4)); /* All 5 cards width */
+    }
+}
+
+/* Mobile: Keep scrollable behavior */
+@media (max-width: 768px) {
+    #model-cards {
+        overflow-x: auto;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+        justify-content: flex-start;
+        padding: var(--space-2) var(--space-8);
+        max-width: none;
+        width: 100%;
+    }
+    
+    #model-cards::-webkit-scrollbar {
+        display: none;
+    }
+}
+
+
+.model-card {
+    width: 220px;
+    flex-shrink: 0;
+    background: var(--glass-bg);
+    backdrop-filter: var(--glass-blur);
+    border: 2px solid var(--glass-border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-4);
+    cursor: pointer;
+    transition: all var(--transition-normal);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    text-align: left;
+}
+
+.model-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: transparent;
+    transition: background var(--transition-normal);
+}
+
+.model-card:hover {
+    border-color: var(--primary-600);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
+.model-card:hover::before {
+    background: var(--primary-gradient);
+}
+
+.model-card.selected {
+    border-color: var(--primary-600);
+    background: rgba(102, 126, 234, 0.1);
+    box-shadow: var(--shadow-glow);
+}
+
+.model-card.selected::before {
+    background: var(--primary-gradient);
+}
+
+.model-name {
+    font-size: var(--text-base);
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: var(--space-1);
+    line-height: 1.3;
+}
+
+.model-provider {
+    font-size: var(--text-sm);
+    color: var(--text-tertiary);
+    margin-bottom: var(--space-3);
+    font-weight: 500;
+}
+
+.model-description {
+    font-size: var(--text-xs);
+    color: var(--text-muted);
+    margin-bottom: var(--space-3);
+    line-height: 1.4;
+    flex-grow: 1;
+}
+
+.model-pricing {
+    display: flex;
+    justify-content: space-between;
+    font-size: var(--text-xs);
+    color: var(--text-tertiary);
+    border-top: 1px solid var(--glass-border);
+    padding-top: var(--space-2);
+}
+
+.model-pricing-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.pricing-label {
+    font-weight: 500;
+    margin-bottom: var(--space-1);
+}
+
+.pricing-value {
+    color: var(--accent-cyan);
+    font-weight: 600;
+}
+
+.model-card.loading {
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+.model-card.loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    margin: -10px 0 0 -10px;
+    border: 2px solid transparent;
+    border-top: 2px solid var(--primary-600);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
 }
 
 main h1 { 
@@ -1061,7 +1302,47 @@ body.sidebar-collapsed #desktop-sidebar-toggle {
         overflow-x: hidden;
     }
     .hero-section {
-        margin-bottom: var(--space-8);
+        margin-bottom: var(--space-6);
+    }
+    
+    /* Mobile Model Selector */
+    #model-selector-section {
+        margin-bottom: var(--space-6);
+        max-width: none;
+    }
+    
+    #model-selector-title {
+        font-size: var(--text-base);
+        margin-bottom: var(--space-3);
+    }
+    
+    #model-selector-container {
+        flex-direction: column;
+        gap: var(--space-3);
+        max-width: none;
+    }
+    
+    .model-card {
+        width: 160px;
+        padding: var(--space-3);
+    }
+    
+    .model-name {
+        font-size: var(--text-sm);
+    }
+    
+    .model-provider {
+        font-size: var(--text-xs);
+        margin-bottom: var(--space-2);
+    }
+    
+    .model-description {
+        font-size: 10px;
+        margin-bottom: var(--space-2);
+    }
+    
+    .model-pricing {
+        font-size: 10px;
     }
     
     main:not(.container) h1 { 

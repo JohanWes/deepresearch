@@ -104,14 +104,34 @@ function renderHistory(historyItems) {
         const li = document.createElement('li');
         li.dataset.id = item.id;
 
+        const contentDiv = document.createElement('div');
+        contentDiv.style.display = 'flex';
+        contentDiv.style.flexDirection = 'column';
+        contentDiv.style.gap = '4px';
+        contentDiv.style.cursor = 'pointer';
+        contentDiv.style.flex = '1';
+        contentDiv.addEventListener('click', () => {
+            window.location.href = `/research/${item.id}`;
+        });
+
         const textSpan = document.createElement('span');
         textSpan.textContent = item.query;
         textSpan.title = item.query;
-        textSpan.style.cursor = 'pointer';
-        textSpan.style.marginRight = '20px';
-        textSpan.addEventListener('click', () => {
-            window.location.href = `/research/${item.id}`;
-        });
+        textSpan.style.fontSize = 'var(--text-sm)';
+        textSpan.style.color = 'var(--text-secondary)';
+
+        const modelSpan = document.createElement('span');
+        if (item.modelUsed) {
+            modelSpan.textContent = `${item.modelUsed.name} (${item.modelUsed.provider})`;
+            modelSpan.style.fontSize = '10px';
+            modelSpan.style.color = 'var(--text-muted)';
+            modelSpan.style.fontStyle = 'italic';
+        }
+
+        contentDiv.appendChild(textSpan);
+        if (item.modelUsed) {
+            contentDiv.appendChild(modelSpan);
+        }
 
         const deleteBtn = document.createElement('span');
         deleteBtn.textContent = 'X';
@@ -119,7 +139,7 @@ function renderHistory(historyItems) {
         deleteBtn.title = 'Delete this item';
         deleteBtn.style.cursor = 'pointer';
 
-        li.appendChild(textSpan);
+        li.appendChild(contentDiv);
         li.appendChild(deleteBtn);
         historyList.appendChild(li);
     });
@@ -138,6 +158,200 @@ async function loadAndDisplayHistory() {
     }
 }
 
+// Model management
+let availableModels = [];
+let selectedModel = null;
+let currentCarouselIndex = 0;
+
+async function loadAvailableModels() {
+    try {
+        const response = await fetch('/api/models');
+        if (!response.ok) {
+            throw new Error(`Failed to load models: ${response.status}`);
+        }
+        const data = await response.json();
+        availableModels = data.models;
+        
+        // Load saved model preference or use default
+        const savedModel = localStorage.getItem('preferredLLMModel');
+        selectedModel = savedModel && availableModels.find(m => m.id === savedModel) 
+            ? savedModel 
+            : data.defaultModel;
+        
+        renderModelSelector();
+    } catch (error) {
+        console.error('Error loading models:', error);
+        // Fallback to basic functionality
+        selectedModel = null;
+    }
+}
+
+function renderModelSelector() {
+    const modelCardsContainer = document.getElementById('model-cards');
+    if (!modelCardsContainer || !availableModels.length) return;
+    
+    if (window.innerWidth > 768) {
+        renderCarouselView();
+    } else {
+        renderMobileView();
+    }
+    
+    updateCarouselButtons();
+}
+
+function renderCarouselView() {
+    const modelCardsContainer = document.getElementById('model-cards');
+    modelCardsContainer.innerHTML = '';
+    
+    // Create a track container for the carousel
+    const track = document.createElement('div');
+    track.className = 'model-cards-track';
+    track.style.display = 'flex';
+    track.style.gap = 'var(--space-4)';
+    track.style.transition = 'transform var(--transition-slow)';
+    
+    // Render all cards in the track
+    availableModels.forEach(model => {
+        const card = createModelCard(model);
+        track.appendChild(card);
+    });
+    
+    modelCardsContainer.appendChild(track);
+    updateCarouselPosition();
+}
+
+function renderMobileView() {
+    const modelCardsContainer = document.getElementById('model-cards');
+    modelCardsContainer.innerHTML = '';
+    
+    // Render all cards directly for mobile scrolling
+    availableModels.forEach(model => {
+        const card = createModelCard(model);
+        modelCardsContainer.appendChild(card);
+    });
+}
+
+function createModelCard(model) {
+    const card = document.createElement('div');
+    card.className = `model-card ${model.id === selectedModel ? 'selected' : ''}`;
+    card.dataset.modelId = model.id;
+    
+    card.innerHTML = `
+        <div class="model-name">${escapeHTML(model.name)}</div>
+        <div class="model-provider">${escapeHTML(model.provider)}</div>
+        <div class="model-description">${escapeHTML(model.description)}</div>
+        <div class="model-pricing">
+            <div class="model-pricing-item">
+                <div class="pricing-label">Input</div>
+                <div class="pricing-value">$${model.inputPrice.toFixed(2)}</div>
+            </div>
+            <div class="model-pricing-item">
+                <div class="pricing-label">Output</div>
+                <div class="pricing-value">$${model.outputPrice.toFixed(2)}</div>
+            </div>
+        </div>
+    `;
+    
+    card.addEventListener('click', () => selectModel(model.id));
+    return card;
+}
+
+function updateCarouselPosition() {
+    if (window.innerWidth <= 768) return; // Mobile doesn't use carousel
+    
+    const track = document.querySelector('.model-cards-track');
+    if (!track) return;
+    
+    const cardWidth = 220; // Card width
+    const gap = 16; // Gap between cards (var(--space-4))
+    const offset = currentCarouselIndex * (cardWidth + gap);
+    
+    track.style.transform = `translateX(-${offset}px)`;
+}
+
+function updateCarouselButtons() {
+    const leftBtn = document.getElementById('scroll-left');
+    const rightBtn = document.getElementById('scroll-right');
+    
+    if (!leftBtn || !rightBtn) return;
+    
+    // Desktop only
+    if (window.innerWidth > 768) {
+        const maxIndex = Math.max(0, availableModels.length - 3); // Show 3 cards
+        leftBtn.disabled = currentCarouselIndex === 0;
+        rightBtn.disabled = currentCarouselIndex >= maxIndex;
+    }
+}
+
+function setupScrollButtons() {
+    const scrollLeftBtn = document.getElementById('scroll-left');
+    const scrollRightBtn = document.getElementById('scroll-right');
+    
+    if (!scrollLeftBtn || !scrollRightBtn) return;
+    
+    scrollLeftBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        navigateCarousel('left');
+    });
+    
+    scrollRightBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        navigateCarousel('right');
+    });
+}
+
+function navigateCarousel(direction) {
+    if (window.innerWidth <= 768) return; // Mobile doesn't use carousel navigation
+    
+    const maxIndex = Math.max(0, availableModels.length - 3);
+    
+    if (direction === 'left' && currentCarouselIndex > 0) {
+        currentCarouselIndex--;
+    } else if (direction === 'right' && currentCarouselIndex < maxIndex) {
+        currentCarouselIndex++;
+    }
+    
+    updateCarouselPosition();
+    updateCarouselButtons();
+}
+
+function selectModel(modelId) {
+    selectedModel = modelId;
+    localStorage.setItem('preferredLLMModel', modelId);
+    
+    // Update UI
+    document.querySelectorAll('.model-card').forEach(card => {
+        card.classList.toggle('selected', card.dataset.modelId === modelId);
+    });
+    
+    // Ensure selected model is visible in carousel
+    ensureModelVisible(modelId);
+}
+
+function ensureModelVisible(modelId) {
+    if (window.innerWidth <= 768) return; // Mobile doesn't need this
+    
+    const modelIndex = availableModels.findIndex(m => m.id === modelId);
+    if (modelIndex === -1) return;
+    
+    // Calculate which carousel position shows this model
+    const maxIndex = Math.max(0, availableModels.length - 3);
+    
+    // If model is not in current view (indices currentCarouselIndex to currentCarouselIndex + 2)
+    if (modelIndex < currentCarouselIndex) {
+        // Model is to the left, move carousel left
+        currentCarouselIndex = modelIndex;
+    } else if (modelIndex >= currentCarouselIndex + 3) {
+        // Model is to the right, move carousel right
+        currentCarouselIndex = Math.min(maxIndex, modelIndex - 2);
+    }
+    
+    updateCarouselPosition();
+    updateCarouselButtons();
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     const searchForm = document.getElementById('search-form');
     const queryInput = document.getElementById('query-input');
@@ -154,7 +368,19 @@ document.addEventListener('DOMContentLoaded', () => {
     const rateLimitMessage = document.getElementById('rate-limit-message');
     const rateLimitCount = document.getElementById('rate-limit-count');
 
+    // Load models and history
+    loadAvailableModels();
     loadAndDisplayHistory();
+    
+    // Setup scroll buttons
+    setupScrollButtons();
+    
+    // Handle window resize for responsive carousel
+    window.addEventListener('resize', () => {
+        if (availableModels.length > 0) {
+            renderModelSelector();
+        }
+    });
 
     // Mobile sidebar toggle
     if (sidebarToggle && bodyElement) {
@@ -259,7 +485,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     body: JSON.stringify({
                         query: searchData.query,
                         urlsToProcess: searchData.urlsToProcess,
-                        topItems: searchData.topItems
+                        topItems: searchData.topItems,
+                        selectedModel: selectedModel
                     }),
                 });
 
@@ -422,10 +649,16 @@ async function handleStreamEnd(isError = false, query, researchId, sources, resu
 
     if (!isError && researchId && query) {
         try {
+            const selectedModelConfig = availableModels.find(m => m.id === selectedModel);
             const researchEntry = {
                 id: researchId,
                 query: query,
-                timestamp: new Date().toISOString()
+                timestamp: new Date().toISOString(),
+                modelUsed: selectedModelConfig ? {
+                    id: selectedModelConfig.id,
+                    name: selectedModelConfig.name,
+                    provider: selectedModelConfig.provider
+                } : null
             };
             await addResearchToDB(researchEntry);
             await loadAndDisplayHistory();
