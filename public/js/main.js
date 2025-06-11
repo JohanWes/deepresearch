@@ -163,6 +163,12 @@ let availableModels = [];
 let selectedModel = null;
 let currentCarouselIndex = 0;
 
+// Ultra-simple mobile swipe variables
+let mobileStartX = 0;
+let mobileStartY = 0;
+let mobileStartTranslateX = 0;
+let mobileCurrentTranslateX = 0;
+
 async function loadAvailableModels() {
     try {
         const response = await fetch('/api/models');
@@ -218,11 +224,17 @@ function renderMobileView() {
     const modelCardsContainer = document.getElementById('model-cards');
     modelCardsContainer.innerHTML = '';
     
-    // Render all cards directly for mobile scrolling
+    // Render all cards for mobile transform carousel
     availableModels.forEach(model => {
         const card = createModelCard(model);
         modelCardsContainer.appendChild(card);
     });
+    
+    // Initialize mobile carousel state
+    initializeMobileCarousel();
+    
+    // Add mobile touch event handlers
+    setupMobileTouchHandlers();
 }
 
 function createModelCard(model) {
@@ -379,7 +391,10 @@ function selectModel(modelId) {
 }
 
 function ensureModelVisible(modelId) {
-    if (window.innerWidth <= 768) return;
+    if (window.innerWidth <= 768) {
+        // Don't move carousel on mobile when selecting a card
+        return;
+    }
 
     const modelIndex = availableModels.findIndex(m => m.id === modelId);
     if (modelIndex === -1) return;
@@ -406,6 +421,112 @@ function ensureModelVisible(modelId) {
     
     updateCarouselTransform();
     updateCarouselButtons();
+}
+
+function initializeMobileCarousel() {
+    if (window.innerWidth > 768) return;
+    
+    // Start at position 0
+    mobileCurrentTranslateX = 0;
+    setMobilePosition(0);
+}
+
+function setMobilePosition(translateX) {
+    if (window.innerWidth > 768) return;
+    
+    const modelCardsContainer = document.getElementById('model-cards');
+    if (!modelCardsContainer) return;
+    
+    modelCardsContainer.style.transform = `translateX(${translateX}px)`;
+    mobileCurrentTranslateX = translateX;
+}
+
+function setupMobileTouchHandlers() {
+    if (window.innerWidth > 768) return;
+    
+    const selectorContainer = document.getElementById('model-selector-container');
+    if (!selectorContainer) return;
+    
+    // Remove existing event listeners
+    selectorContainer.removeEventListener('touchstart', handleMobileTouchStart);
+    selectorContainer.removeEventListener('touchmove', handleMobileTouchMove);
+    selectorContainer.removeEventListener('touchend', handleMobileTouchEnd);
+    
+    // Add real-time touch event listeners
+    selectorContainer.addEventListener('touchstart', handleMobileTouchStart, { passive: false });
+    selectorContainer.addEventListener('touchmove', handleMobileTouchMove, { passive: false });
+    selectorContainer.addEventListener('touchend', handleMobileTouchEnd, { passive: false });
+}
+
+function handleMobileTouchStart(e) {
+    const touch = e.touches[0];
+    mobileStartX = touch.clientX;
+    mobileStartY = touch.clientY;
+    mobileStartTranslateX = mobileCurrentTranslateX;
+    
+    // Disable CSS transition during touch
+    const cards = document.getElementById('model-cards');
+    if (cards) cards.classList.add('touching');
+}
+
+function handleMobileTouchMove(e) {
+    const touch = e.touches[0];
+    const deltaX = touch.clientX - mobileStartX;
+    const deltaY = touch.clientY - mobileStartY;
+    
+    // Only handle horizontal swipes to avoid interfering with vertical scrolling
+    // Increased threshold to prevent accidental movement during taps
+    if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 20) {
+        e.preventDefault(); // Prevent scrolling only for horizontal swipes
+        
+        // Simple: just follow the finger, no constraints during movement
+        const newTranslateX = mobileStartTranslateX + deltaX;
+        setMobilePosition(newTranslateX);
+    }
+}
+
+function handleMobileTouchEnd(e) {
+    // Re-enable CSS transition
+    const cards = document.getElementById('model-cards');
+    if (cards) cards.classList.remove('touching');
+    
+    // Apply boundaries only on touch end
+    const constrainedX = simpleConstrain(mobileCurrentTranslateX);
+    setMobilePosition(constrainedX);
+}
+
+function constrainPosition(translateX) {
+    if (window.innerWidth > 768) return translateX;
+    return simpleConstrain(translateX);
+}
+
+function simpleConstrain(translateX) {
+    const container = document.getElementById('model-selector-container');
+    const content = document.getElementById('model-cards');
+    
+    if (!container || !content) return translateX;
+    
+    // Ultra-simple: very generous right boundary to see first card fully
+    const maxRight = 400; // Generous allowance for cards #1 and #2 visibility  
+    const maxLeft = container.clientWidth - content.scrollWidth + 350; // Prevent over-swiping right
+    
+    return Math.max(maxLeft, Math.min(maxRight, translateX));
+}
+
+function ensureMobileModelVisible(modelId) {
+    if (window.innerWidth > 768) return;
+    
+    const modelIndex = availableModels.findIndex(m => m.id === modelId);
+    if (modelIndex === -1) return;
+    
+    // Calculate approximate position to show the selected model
+    const cardWidth = 160;
+    const cardGap = 16;
+    const targetTranslateX = -modelIndex * (cardWidth + cardGap);
+    
+    // Constrain and set position
+    const constrainedTranslateX = constrainPosition(targetTranslateX);
+    setMobilePosition(constrainedTranslateX);
 }
 
 document.addEventListener('DOMContentLoaded', () => {
