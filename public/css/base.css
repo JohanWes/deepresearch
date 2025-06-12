@@ -1,4 +1,3 @@
-/* Base HTML and Body Styles */
 html {
     width: 100vw;
     max-width: 100vw;
@@ -13,40 +12,33 @@ body {
     font-family: var(--font-primary); 
     margin: 0; 
     padding: 0; 
-    background: var(--dark-950); /* Use a solid background for full coverage */
+    background: var(--dark-950);
     color: var(--text-primary); 
     font-size: var(--text-base); 
     line-height: 1.6; 
     display: flex;
-    width: 100%; /* Use 100% instead of 100vw to avoid issues */
+    width: 100%;
     
-    /* --- MODIFIED RULES --- */
-    min-height: 100vh; /* Ensure body is at least the full viewport height */
-    min-height: 100dvh; /* A MODERN fallback for dynamic viewport height on mobile */
-    
-    overflow-x: hidden; /* Keep this to prevent horizontal scroll */
-    /* REMOVED: overflow-y: hidden; We want main content to scroll, not the body */
-    /* REMOVED: height: 100vh; Replaced with min-height */
-    /* REMOVED: background: linear-gradient(...); moved to a pseudo-element */
+    min-height: 100vh;
+    min-height: 100dvh;
+    overflow-x: hidden;
     
     flex-direction: row-reverse;
-    position: relative; /* Needed for the pseudo-element */
-    z-index: 1; /* Needed for the pseudo-element */
+    position: relative;
+    z-index: 1;
 }
 
-/* Add a pseudo-element for the gradient to ensure it covers the entire scrollable area */
 body::before {
     content: '';
-    position: fixed; /* Fixed position covers the entire viewport */
+    position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
     background: linear-gradient(135deg, var(--dark-950) 0%, var(--dark-900) 100%);
-    z-index: -1; /* Place it behind all other content */
+    z-index: -1;
 }
 
-/* Login Page Styles */
 body.login-page { 
     font-family: var(--font-primary); 
     margin: 0; 
@@ -178,7 +170,6 @@ body.login-page {
     border-radius: var(--radius-md);
 }
 
-/* Loading Overlay */
 #loading-overlay {
     display: none;
     position: fixed;
@@ -284,7 +275,6 @@ body.login-page {
     animation: spin 1.5s ease-in-out infinite reverse;
 }
 
-/* Cost Popup */
 #cost-popup {
     position: fixed;
     top: var(--space-5);
@@ -315,7 +305,6 @@ body.login-page {
     transform: translateY(-10px);
 }
 
-/* Rate Limit Popup */
 #rate-limit-popup {
     position: fixed;
     top: 50%;
@@ -376,7 +365,6 @@ body.login-page {
     font-weight: 400;
 }
 
-/* Global Scrollbar Styling */
 ::-webkit-scrollbar {
     width: 8px;
     height: 8px;
@@ -401,7 +389,6 @@ body.login-page {
     background: var(--dark-800);
 }
 
-/* Shared Animations */
 @keyframes fadeIn {
     from { opacity: 0; }
     to { opacity: 1; }

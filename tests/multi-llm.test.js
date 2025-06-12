@@ -21,7 +21,6 @@ class MultiLLMTester {
     async startServer() {
         console.log('🚀 Starting server for testing...');
         
-        // Kill any existing server processes
         await this.stopExistingServers();
         
         this.serverProcess = spawn('npm', ['start'], { 
@@ -30,7 +29,6 @@ class MultiLLMTester {
             cwd: '/home/westerjo/repos/deepresearch'
         });
 
-        // Wait for server to start
         await delay(4000);
         
         try {
@@ -53,7 +51,6 @@ class MultiLLMTester {
             spawn('pkill', ['-f', 'node server.js'], { stdio: 'ignore' });
             await delay(2000);
         } catch (error) {
-            // Ignore errors
         }
     }
 
@@ -89,7 +86,6 @@ class MultiLLMTester {
         assert(data.defaultModel, 'Response should contain defaultModel');
         assert(data.models.length === 5, `Expected 5 models, got ${data.models.length}`);
         
-        // Test model structure
         const model = data.models[0];
         assert(model.id, 'Model should have id');
         assert(model.name, 'Model should have name');
@@ -129,7 +125,6 @@ class MultiLLMTester {
         });
         const data = await response.json();
         
-        // Test specific pricing
         const geminiModel = data.models.find(m => m.id === 'google/gemini-2.5-flash-preview-05-20:thinking');
         assert(geminiModel.inputPrice === 0.15, `Gemini input price should be 0.15, got ${geminiModel.inputPrice}`);
         assert(geminiModel.outputPrice === 0.6, `Gemini output price should be 0.6, got ${geminiModel.outputPrice}`);
@@ -158,7 +153,6 @@ class MultiLLMTester {
     }
 
     async testAuthenticationRequired() {
-        // Test without session cookie
         const response = await fetch(`${this.baseUrl}/api/models`);
         assert(response.status === 401, `Should require authentication, got ${response.status}`);
         
@@ -186,7 +180,6 @@ class MultiLLMTester {
     }
 
     async testModelSelectionPersistence() {
-        // Test that the process endpoint accepts selectedModel parameter
         const testData = {
             query: 'test query',
             urlsToProcess: ['https://example.com'],
@@ -203,7 +196,6 @@ class MultiLLMTester {
             body: JSON.stringify(testData)
         });
         
-        // Should start SSE stream (even if it fails due to fake URL, it accepts the model parameter)
         assert(response.ok, `Process endpoint should accept model parameter, got ${response.status}`);
         assert(response.headers.get('content-type').includes('text/event-stream'), 'Should return SSE stream');
         
@@ -219,18 +211,14 @@ class MultiLLMTester {
             return false;
         }
 
-        // Core API Tests
         await this.runTest('Models API Response Structure', () => this.testModelsAPI());
         await this.runTest('Models List Validation', () => this.testModelsList());
         await this.runTest('Model Pricing Validation', () => this.testModelPricing());
         
-        // Authentication Tests
         await this.runTest('Authentication Required', () => this.testAuthenticationRequired());
         
-        // Frontend Integration Tests
         await this.runTest('Main Page HTML Structure', () => this.testMainPageHTML());
         
-        // Backend Integration Tests
         await this.runTest('Search Endpoint Functionality', () => this.testSearchEndpoint());
         await this.runTest('Model Selection Persistence', () => this.testModelSelectionPersistence());
 
@@ -269,7 +257,6 @@ class MultiLLMTester {
     }
 }
 
-// Run tests if this file is executed directly
 if (import.meta.url === `file://${process.argv[1]}`) {
     const tester = new MultiLLMTester();
     

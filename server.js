@@ -25,20 +25,17 @@ fs.mkdir(usageDir, { recursive: true }).catch(console.error);
 const PORT = process.env.PORT || 3000;
 const HOST = process.env.SERVER_IP || '0.0.0.0';
 const NUM_SOURCES_TO_PROCESS = parseInt(process.env.NUM_SOURCES, 10) || 3;
-const DAILY_REQUEST_LIMIT = parseInt(process.env.DAILY_REQUEST_LIMIT, 10) || 10; // Default to 10 requests
+const DAILY_REQUEST_LIMIT = parseInt(process.env.DAILY_REQUEST_LIMIT, 10) || 10;
 
-// Parse available models from environment
 let AVAILABLE_MODELS = [];
 try {
     const envModels = process.env.AVAILABLE_MODELS || '[]';
     AVAILABLE_MODELS = JSON.parse(envModels);
     
-    // Validate that we have at least one model
     if (!Array.isArray(AVAILABLE_MODELS) || AVAILABLE_MODELS.length === 0) {
         throw new Error('AVAILABLE_MODELS must be a non-empty array');
     }
     
-    // Validate model structure
     for (const model of AVAILABLE_MODELS) {
         if (!model.id || !model.name || !model.provider || typeof model.inputPrice !== 'number' || typeof model.outputPrice !== 'number') {
             throw new Error('Invalid model structure found in AVAILABLE_MODELS');
@@ -215,7 +212,6 @@ app.post('/login', (req, res) => {
     }
 });
 
-// API endpoint to get available models
 app.get('/api/models', checkAuthentication, (req, res) => {
     try {
         res.json({
@@ -285,8 +281,7 @@ app.get('/', (req, res) => {
                     </button>
                     <div id="model-cards-container">
                         <div id="model-cards">
-                            <!-- Model cards will be populated by JavaScript -->
-                        </div>
+                                        </div>
                     </div>
                     <button class="scroll-button scroll-button-right" id="scroll-right" type="button" aria-label="Scroll right">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
@@ -610,7 +605,6 @@ app.post('/process-and-summarize', checkAuthentication, async (req, res) => {
         const combinedText = successfulExtractions.join('\n\n---\n\n');
         sendSseMessage({ type: 'sources_processed', count: successfulSourceItems.length, sources: successfulSourceItems }, 'info');
 
-        // Validate and get model configuration
         const modelToUse = selectedModel || DEFAULT_MODEL;
         const modelConfig = AVAILABLE_MODELS.find(m => m.id === modelToUse);
         

@@ -22,7 +22,6 @@ class MobileCarouselTester {
     async startServer() {
         console.log('🚀 Starting server for testing...');
         
-        // Kill any existing server processes
         await this.stopExistingServers();
         
         this.serverProcess = spawn('npm', ['start'], { 
@@ -31,7 +30,6 @@ class MobileCarouselTester {
             cwd: '/home/westerjo/repos/deepresearch'
         });
 
-        // Wait for server to start
         await delay(4000);
         
         try {
@@ -81,7 +79,6 @@ class MobileCarouselTester {
         const response = await fetch(`${this.baseUrl}/css/style.css`);
         const cssContent = await response.text();
         
-        // Test that touch-action allows horizontal movement
         const mobileSection = cssContent.match(/@media \(max-width: 768px\) \{[\s\S]*?\}/g);
         assert(mobileSection, 'Mobile CSS section should exist');
         
@@ -102,7 +99,6 @@ class MobileCarouselTester {
         const dom = new JSDOM(html);
         const document = dom.window.document;
         
-        // Test required HTML elements exist
         const modelSelector = document.getElementById('model-selector-container');
         assert(modelSelector, 'Model selector container should exist');
         
@@ -116,7 +112,6 @@ class MobileCarouselTester {
         const response = await fetch(`${this.baseUrl}/js/main.js`);
         const jsContent = await response.text();
         
-        // Test that required touch functions exist
         assert(jsContent.includes('handleMobileTouchStart'), 'handleMobileTouchStart function should exist');
         assert(jsContent.includes('handleMobileTouchMove'), 'handleMobileTouchMove function should exist');
         assert(jsContent.includes('handleMobileTouchEnd'), 'handleMobileTouchEnd function should exist');
@@ -129,7 +124,6 @@ class MobileCarouselTester {
         const response = await fetch(`${this.baseUrl}/js/main.js`);
         const jsContent = await response.text();
         
-        // Test that touch events are properly bound
         assert(jsContent.includes('touchstart'), 'Touch start event should be bound');
         assert(jsContent.includes('touchmove'), 'Touch move event should be bound');
         assert(jsContent.includes('touchend'), 'Touch end event should be bound');
@@ -141,13 +135,11 @@ class MobileCarouselTester {
         const response = await fetch(`${this.baseUrl}/js/main.js`);
         const jsContent = await response.text();
         
-        // Test that complex constraint bypass logic is removed
         assert(
             !jsContent.includes('constraints blocking movement, bypassing temporarily'),
             'Complex constraint bypass logic should be removed'
         );
         
-        // Test that simple constraint function exists
         assert(
             jsContent.includes('simpleConstrain') || jsContent.includes('constrainPosition'),
             'Constraint function should exist'
@@ -160,7 +152,6 @@ class MobileCarouselTester {
         const response = await fetch(`${this.baseUrl}/css/style.css`);
         const cssContent = await response.text();
         
-        // Test mobile-specific carousel styling
         const mobileSection = cssContent.match(/@media \(max-width: 768px\) \{[\s\S]*?\}/g);
         assert(mobileSection, 'Mobile CSS section should exist');
         
@@ -177,7 +168,6 @@ class MobileCarouselTester {
         const response = await fetch(`${this.baseUrl}/js/main.js`);
         const jsContent = await response.text();
         
-        // Test that CSS transitions are handled during touch
         assert(
             jsContent.includes('touching') || jsContent.includes('transition'),
             'Transition handling during touch should be implemented'
@@ -190,7 +180,6 @@ class MobileCarouselTester {
         const response = await fetch(`${this.baseUrl}/js/main.js`);
         const jsContent = await response.text();
         
-        // Test that boundary logic exists and is simple
         const hasScrollWidth = jsContent.includes('scrollWidth');
         const hasClientWidth = jsContent.includes('clientWidth');
         const hasMathMinMax = jsContent.includes('Math.min') && jsContent.includes('Math.max');
@@ -204,7 +193,6 @@ class MobileCarouselTester {
     async runAllTests() {
         console.log('🏁 Starting Mobile Carousel Touch Test Suite\n');
 
-        // Start server
         const serverStarted = await this.startServer();
         if (!serverStarted) {
             console.log('❌ Failed to start server. Exiting tests.');
@@ -213,7 +201,6 @@ class MobileCarouselTester {
 
         console.log('');
 
-        // Run tests
         await this.runTest('CSS Mobile Touch Action', () => this.testCSSMobileTouchAction());
         await this.runTest('Carousel HTML Structure', () => this.testCarouselHTMLStructure());
         await this.runTest('JavaScript Touch Functions', () => this.testJavaScriptTouchFunctions());
@@ -223,10 +210,8 @@ class MobileCarouselTester {
         await this.runTest('Transition Handling', () => this.testTransitionHandling());
         await this.runTest('Boundary Logic', () => this.testBoundaryLogic());
 
-        // Stop server
         await this.stopServer();
 
-        // Print results
         this.printResults();
     }
 
@@ -256,11 +241,9 @@ class MobileCarouselTester {
     }
 }
 
-// Main execution
 if (import.meta.url === `file://${process.argv[1]}`) {
     const tester = new MobileCarouselTester();
     
-    // Handle graceful shutdown
     process.on('SIGINT', async () => {
         console.log('\n🛑 Shutting down tests...');
         await tester.stopServer();

@@ -1,6 +1,4 @@
-/* Mobile-Specific Styles and Overrides */
 @media (max-width: 768px) {
-    /* Hide desktop-only elements */
     #desktop-sidebar-toggle {
         display: none;
     }
@@ -9,28 +7,23 @@
         display: none !important;
     }
 
-    /* Hide carousel scrollbar on mobile */
     #carousel-scrollbar {
         display: none;
     }
 
-    /* Hide carousel navigation buttons on mobile */
     .scroll-button {
         display: none;
     }
 
-    /* Body Layout Override */
     body:not(.login-page) {
         display: block;
     }
 
-    /* Mobile Header */
     #mobile-header {
         display: flex;
         justify-content: space-between;
     }
 
-    /* History Sidebar Mobile Behavior */
     #history-sidebar {
         transform: translateX(-100%);
         padding-top: calc(var(--header-height) + 10px);
@@ -42,7 +35,6 @@
         transform: translateX(0);
     }
 
-    /* Main Content Mobile Layout */
     main {
         margin-left: 0;
         width: 100vw;
@@ -57,7 +49,6 @@
         margin-bottom: var(--space-6);
     }
     
-    /* Mobile Model Selector */
     #model-selector-section {
         margin-bottom: var(--space-6);
         max-width: none;
@@ -68,14 +59,12 @@
         margin-bottom: var(--space-3);
     }
     
-    /* Mobile Model Selector - RESET a simple block layout */
     #model-selector-container {
         display: block;
         width: 100%;
         overflow: hidden;
     }
 
-    /* Parent of Swiper - RESET to a simple block with NO padding/flex */
     #model-cards {
         display: block;
         padding: 0;
@@ -84,12 +73,10 @@
         transition: none !important;
     }
 
-    /* Swiper Mobile Carousel Styles - The Core Setup */
     .swiper-container {
         width: 100%;
         height: auto;
         padding: var(--space-2) 0;
-        /* This ensures it doesn't get shrunk by any rogue flexbox parents */
         flex-shrink: 0;
     }
 
@@ -99,14 +86,13 @@
     }
 
     .swiper-slide {
-        width: 85%; /* This will now be 85% of the full screen width */
+        width: 85%;
         height: auto;
-        flex-shrink: 0; /* Important for consistency */
+        flex-shrink: 0;
     }
 
-    /* Ensure model cards work with Swiper */
     .swiper-slide .model-card {
-        width: 100%; /* Card takes up 100% of the slide's 85% width */
+        width: 100%;
         margin: 0;
         height: 100%;
         cursor: pointer;
@@ -130,7 +116,6 @@
         font-size: 10px;
     }
     
-    /* Mobile Typography */
     main:not(.container) h1 { 
         font-size: clamp(var(--text-2xl), 8vw, var(--text-3xl)); 
         margin-bottom: var(--space-4); 
@@ -141,7 +126,6 @@
         margin-bottom: var(--space-6);
     }
     
-    /* Mobile Form Styling */
     main:not(.container) form { 
         flex-direction: column; 
         gap: var(--space-3);
@@ -168,7 +152,6 @@ main:not(.container) input[type="text"] {
         font-weight: 600;
     }
 
-    /* Mobile Results */
     #results { 
         padding: 0; 
         margin-top: var(--space-6);
@@ -186,7 +169,6 @@ main:not(.container) input[type="text"] {
         margin-bottom: var(--space-4);
     }
 
-    /* Mobile Loading Overlay */
     #loading-urls {
         display: none;
     }
@@ -209,7 +191,6 @@ main:not(.container) input[type="text"] {
         padding: var(--space-4);
     }
 
-    /* Mobile Container Layout */
     main.container {
         margin-top: 0;
         margin-right: 0;
@@ -242,59 +223,47 @@ main:not(.container) input[type="text"] {
         margin-bottom: var(--space-3);
     }
 
-/* --- START: Mobile Result Highlight Animation --- */
-
 @keyframes highlight-pulse {
   0% {
-    box-shadow: var(--shadow-lg), 0 0 0 0 rgba(102, 126, 234, 0); /* Start with no glow */
+    box-shadow: var(--shadow-lg), 0 0 0 0 rgba(102, 126, 234, 0);
     border-color: var(--glass-border);
   }
   50% {
-    /* Pulse to a visible glow using the theme's primary color */
     box-shadow: var(--shadow-lg), 0 0 25px 5px var(--primary-glow);
     border-color: var(--primary-600);
   }
   100% {
-    box-shadow: var(--shadow-lg), 0 0 0 0 rgba(102, 126, 234, 0); /* Fade back to no glow */
+    box-shadow: var(--shadow-lg), 0 0 0 0 rgba(102, 126, 234, 0);
     border-color: var(--glass-border);
   }
 }
 
 .result-highlight-animation {
-  /* Apply the animation to the results card */
   animation: highlight-pulse 1.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* --- END: Mobile Result Highlight Animation --- */
-
-/* Mobile Home Icon - Updated for perfect centering */
 .home-icon-link {
-    position: static; /* Remains the same */
-    margin-left: auto; /* Pushes the button to the right side of the header */
-    
-    /* --- NEW RULES --- */
-    display: flex; /* Use flexbox for centering the icon */
-    align-items: center; /* Vertically center the icon */
-    justify-content: center; /* Horizontally center the icon */
-    
-    width: 28px; /* Define an explicit width */
-    height: 28px; /* Define an explicit height to make it a square */
-    
-    /* Add some visual polish */
-    border-radius: var(--radius-md); /* Give it slightly rounded corners */
-    background: rgba(255, 255, 255, 0.05); /* A subtle background for definition */
-    border: 1px solid var(--glass-border); /* Consistent with other elements */
-    transition: background var(--transition-normal); /* Smooth hover effect */
+    position: static;
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: var(--radius-md);
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--glass-border);
+    transition: background var(--transition-normal);
 }
 
 .home-icon-link:hover {
-    background: rgba(255, 255, 255, 0.1); /* Slightly lighter on hover */
+    background: rgba(255, 255, 255, 0.1);
 }
 
 .home-icon-link svg {
-     margin-right: 0; /* Remove the old margin */
-     width: 16px; /* Ensure SVG size is consistent */
-     height: 16px; /* Ensure SVG size is consistent */
+     margin-right: 0;
+     width: 16px;
+     height: 16px;
 }
     
     .home-icon-link svg {

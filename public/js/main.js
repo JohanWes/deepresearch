@@ -158,7 +158,6 @@ async function loadAndDisplayHistory() {
     }
 }
 
-// Model management
 let availableModels = [];
 let selectedModel = null;
 let currentCarouselIndex = 0;
@@ -173,7 +172,6 @@ async function loadAvailableModels() {
         const data = await response.json();
         availableModels = data.models;
         
-        // Load saved model preference or use default
         const savedModel = localStorage.getItem('preferredLLMModel');
         selectedModel = savedModel && availableModels.find(m => m.id === savedModel) 
             ? savedModel 
@@ -182,7 +180,6 @@ async function loadAvailableModels() {
         renderModelSelector();
     } catch (error) {
         console.error('Error loading models:', error);
-        // Fallback to basic functionality
         selectedModel = null;
     }
 }
@@ -195,20 +192,19 @@ function renderModelSelector() {
 
     if (window.innerWidth > 768) {
         renderDesktopCarousel();
-        renderScrollbar(); // New function
+        renderScrollbar();
     } else {
         renderMobileView();
     }
 
     updateCarouselButtons();
-    updateCarouselTransform(); // Initial position update
+    updateCarouselTransform();
 }
 
 function renderDesktopCarousel() {
     const modelCardsContainer = document.getElementById('model-cards');
     modelCardsContainer.innerHTML = '';
     
-    // Render all cards for desktop, scrolling is handled by transform
     availableModels.forEach(model => {
         const card = createModelCard(model);
         modelCardsContainer.appendChild(card);
@@ -221,17 +217,14 @@ function renderMobileView() {
     
     if (!modelCardsContainer || !modelSelectorContainer) return;
     
-    // Clear existing content
     modelCardsContainer.innerHTML = '';
     
-    // Add Swiper container structure
     const swiperContainer = document.createElement('div');
     swiperContainer.className = 'swiper-container mobile-model-swiper';
     
     const swiperWrapper = document.createElement('div');
     swiperWrapper.className = 'swiper-wrapper';
     
-    // Create slides for each model
     availableModels.forEach(model => {
         const slide = document.createElement('div');
         slide.className = 'swiper-slide';
@@ -242,43 +235,34 @@ function renderMobileView() {
     
     swiperContainer.appendChild(swiperWrapper);
     
-    // Add pagination
     const pagination = document.createElement('div');
     pagination.className = 'swiper-pagination';
     swiperContainer.appendChild(pagination);
     
-    // Replace model cards container content
     modelCardsContainer.appendChild(swiperContainer);
     
-    // Initialize Swiper when ready
     initializeMobileSwiper();
 }
 
 let mobileSwiper = null;
 
 function initializeMobileSwiper() {
-    // Wait for Swiper to load
     if (!window.Swiper) {
         if (window.swiperLoaded) {
-            // Swiper loaded but not available yet, wait a bit
             setTimeout(initializeMobileSwiper, 50);
         } else {
-            // Wait for swiper to load
             window.addEventListener('swiperready', initializeMobileSwiper);
         }
         return;
     }
     
-    // Destroy existing instance if any
     if (mobileSwiper) {
         mobileSwiper.destroy(true, true);
         mobileSwiper = null;
     }
     
-    // Find initial slide index based on selected model
     const initialSlide = availableModels.findIndex(m => m.id === selectedModel);
     
-    // Initialize Swiper
     mobileSwiper = new Swiper('.mobile-model-swiper', {
         slidesPerView: 'auto',
         centeredSlides: true,
@@ -296,7 +280,6 @@ function initializeMobileSwiper() {
         grabCursor: true,
         on: {
             click: function(swiper, event) {
-                // Handle card selection
                 const clickedSlide = swiper.slides[swiper.clickedIndex];
                 if (clickedSlide) {
                     const modelCard = clickedSlide.querySelector('.model-card');
@@ -304,7 +287,6 @@ function initializeMobileSwiper() {
                         const modelId = modelCard.dataset.modelId;
                         selectModel(modelId);
                         
-                        // Center the selected card
                         if (swiper.clickedIndex !== swiper.activeIndex) {
                             swiper.slideTo(swiper.clickedIndex);
                         }
@@ -346,8 +328,8 @@ function updateCarouselTransform() {
     const modelCards = document.getElementById('model-cards');
     if (!modelCards) return;
 
-    const cardWidth = 220; // From CSS
-    const gap = 16; // From CSS var(--space-4)
+    const cardWidth = 220;
+    const gap = 16;
     const scrollAmount = currentCarouselIndex * (cardWidth + gap);
 
     modelCards.style.transform = `translateX(-${scrollAmount}px)`;
@@ -372,7 +354,6 @@ function updateCarouselButtons() {
         rightBtn.disabled = currentScroll >= maxScroll;
 
     } else {
-        // Hide buttons on mobile
         leftBtn.style.display = 'none';
         rightBtn.style.display = 'none';
     }
@@ -384,7 +365,6 @@ function setupScrollButtons() {
     
     if (!scrollLeftBtn || !scrollRightBtn) return;
     
-    // Set arrow text content directly
     scrollLeftBtn.innerHTML = '‹';
     scrollRightBtn.innerHTML = '›';
     
@@ -459,26 +439,22 @@ function selectModel(modelId) {
     selectedModel = modelId;
     localStorage.setItem('preferredLLMModel', modelId);
     
-    // Update UI
     document.querySelectorAll('.model-card').forEach(card => {
         card.classList.toggle('selected', card.dataset.modelId === modelId);
     });
     
-    // Handle mobile Swiper centering
     if (window.innerWidth <= 768 && mobileSwiper) {
         const selectedIndex = availableModels.findIndex(m => m.id === modelId);
         if (selectedIndex >= 0 && selectedIndex !== mobileSwiper.activeIndex) {
             mobileSwiper.slideTo(selectedIndex);
         }
     } else {
-        // Desktop carousel behavior remains unchanged
         ensureModelVisible(modelId);
     }
 }
 
 function ensureModelVisible(modelId) {
     if (window.innerWidth <= 768) {
-        // Don't move carousel on mobile when selecting a card
         return;
     }
 
@@ -526,20 +502,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const rateLimitMessage = document.getElementById('rate-limit-message');
     const rateLimitCount = document.getElementById('rate-limit-count');
 
-    // Load models and history
     loadAvailableModels();
     loadAndDisplayHistory();
     
-    // Setup scroll buttons
     setupScrollButtons();
     
-    // Handle window resize for responsive carousel
     window.addEventListener('resize', () => {
         const wasMobile = mobileSwiper !== null;
         const isMobile = window.innerWidth <= 768;
         
         if (availableModels.length > 0) {
-            // Destroy Swiper if switching from mobile to desktop
             if (wasMobile && !isMobile && mobileSwiper) {
                 mobileSwiper.destroy(true, true);
                 mobileSwiper = null;
@@ -549,14 +521,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Mobile sidebar toggle
     if (sidebarToggle && bodyElement) {
         sidebarToggle.addEventListener('click', () => {
             bodyElement.classList.toggle('sidebar-open');
         });
     }
 
-    // Desktop sidebar toggle
     if (desktopSidebarToggle && bodyElement) {
         desktopSidebarToggle.addEventListener('click', () => {
             bodyElement.classList.toggle('sidebar-collapsed');
@@ -625,7 +595,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     const errorData = await searchResponse.json().catch(() => ({ error: 'Failed to parse search error response.' }));
                     if (searchResponse.status === 429) {
                         showRateLimitPopup(errorData.error, errorData.currentUsage, errorData.limit, rateLimitPopup, rateLimitMessage, rateLimitCount, queryInput, researchButton);
-                        return; // Stop further processing
+                        return;
                     }
                     throw new Error(`Search request failed: ${searchResponse.status} ${searchResponse.statusText} - ${errorData.error || 'Unknown error'}`);
                 }
@@ -767,30 +737,22 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 async function handleStreamEnd(isError = false, query, researchId, sources, resultsDisplayDiv, sourcesDisplayContainer) {
-    // ======================= START: MOBILE-ONLY SCROLL & HIGHLIGHT =======================
     if (window.innerWidth <= 768) {
         const resultsDiv = document.getElementById('results');
         if (resultsDiv) {
-            // Use a slight delay to ensure the content is rendered before scrolling.
             setTimeout(() => {
-                // Scroll the results into view with a smooth animation.
-                // 'block: 'start'' ensures the top of the element aligns with the top of the viewport.
                 resultsDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
-                // Find the results card and apply a temporary highlight animation.
                 const resultsCard = resultsDiv.querySelector('.results-card');
                 if (resultsCard) {
                     resultsCard.classList.add('result-highlight-animation');
-
-                    // Remove the animation class after 2 seconds so it doesn't persist.
                     setTimeout(() => {
                         resultsCard.classList.remove('result-highlight-animation');
                     }, 2000);
                 }
-            }, 100); // 100ms delay is usually sufficient.
+            }, 100);
         }
     }
-    // ======================== END: MOBILE-ONLY SCROLL & HIGHLIGHT =========================
 
     const loadingOverlay = document.getElementById('loading-overlay');
     const queryInput = document.getElementById('query-input');
@@ -874,6 +836,6 @@ function showRateLimitPopup(message, currentUsage, limit, popupElement, messageE
             setTimeout(() => {
                 popupElement.classList.remove('fade-out');
             }, 500);
-        }, 5000); // Popup disappears after 5 seconds
+        }, 5000);
     }
 }

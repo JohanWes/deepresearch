@@ -1,14 +1,4 @@
-/* Deep Research - Main CSS Import File */
-/* This file imports all modular CSS files in the correct order */
-
-/* 1. CSS Variables and Design Tokens */
 @import 'variables.css';
-
-/* 2. Base Styles (shared across all devices) */
 @import 'base.css';
-
-/* 3. Desktop Styles and Layout */
 @import 'desktop.css';
-
-/* 4. Mobile Styles and Responsive Overrides */
 @import 'mobile.css';
