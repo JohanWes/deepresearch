@@ -1,0 +1,27 @@
+@media (max-width: 768px) {
+    #desktop-controls {
+        display: none !important;
+    }
+
+    .model-carousel-container {
+        overflow: hidden;
+        cursor: grab;
+        touch-action: pan-y; /* Allow vertical scroll */
+    }
+
+    .model-carousel-container:active {
+        cursor: grabbing;
+    }
+
+    #model-cards { /* This is the wrapper */
+        padding: 0 calc(50% - 40%); /* Creates the peeking effect */
+        gap: var(--space-3);
+        /* transition is now handled by JS for better control */
+    }
+
+    .model-card {
+        width: 80%;
+        flex-shrink: 0;
+        transition: opacity var(--transition-slow);
+    }
+}

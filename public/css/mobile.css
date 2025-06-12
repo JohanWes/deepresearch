@@ -68,43 +68,48 @@
         margin-bottom: var(--space-3);
     }
     
+    /* Mobile Model Selector - RESET a simple block layout */
     #model-selector-container {
-        flex-direction: column;
-        gap: var(--space-3);
-        max-width: none;
-        overflow: hidden;
+        display: block;
         width: 100%;
-        position: relative;
+        overflow: hidden;
     }
 
-    /* Mobile Carousel Transform-based (no scroll) */
+    /* Parent of Swiper - RESET to a simple block with NO padding/flex */
     #model-cards {
-        overflow: visible;
-        justify-content: flex-start;
-        padding: var(--space-2) var(--space-8);
-        max-width: none;
-        width: auto;
-        cursor: grab;
-        touch-action: pan-x;
+        display: block;
+        padding: 0;
+        margin: 0;
+        transform: none !important;
+        transition: none !important;
     }
-    
-    #model-cards:active {
-        cursor: grabbing;
+
+    /* Swiper Mobile Carousel Styles - The Core Setup */
+    .swiper-container {
+        width: 100%;
+        height: auto;
+        padding: var(--space-2) 0;
+        /* This ensures it doesn't get shrunk by any rogue flexbox parents */
+        flex-shrink: 0;
     }
-    
-    #model-cards.touching {
-        transition: none;
+
+    .swiper-wrapper {
+        display: flex;
+        align-items: stretch;
     }
-    
-    .model-card {
-        width: 160px;
-        padding: var(--space-3);
-        touch-action: manipulation;
+
+    .swiper-slide {
+        width: 85%; /* This will now be 85% of the full screen width */
+        height: auto;
+        flex-shrink: 0; /* Important for consistency */
     }
-    
-    .model-card:active {
-        transform: scale(0.98);
-        transition: transform 0.1s ease;
+
+    /* Ensure model cards work with Swiper */
+    .swiper-slide .model-card {
+        width: 100%; /* Card takes up 100% of the slide's 85% width */
+        margin: 0;
+        height: 100%;
+        cursor: pointer;
     }
     
     .model-name {
@@ -144,14 +149,15 @@
         margin-bottom: var(--space-8);
     }
     
-    main:not(.container) input[type="text"] { 
-        width: 100%; 
-        max-width: none; 
-        border-radius: var(--radius-lg);
-        border: 2px solid var(--glass-border);
-        padding: var(--space-4);
-        font-size: var(--text-base);
-    }
+main:not(.container) input[type="text"] { 
+    width: 100%; 
+    max-width: none; 
+    border-radius: var(--radius-lg);
+    border: 2px solid var(--glass-border);
+    padding: var(--space-4);
+    font-size: var(--text-base);
+    box-sizing: border-box;
+}
     
     main:not(.container) button { 
         width: 100%; 
@@ -236,15 +242,60 @@
         margin-bottom: var(--space-3);
     }
 
-    /* Mobile Home Icon */
-    .home-icon-link {
-        position: static;
-        margin-left: auto;
-        padding: 0;
-        display: flex;
-        align-items: center;
-        height: 100%;
-    }
+/* --- START: Mobile Result Highlight Animation --- */
+
+@keyframes highlight-pulse {
+  0% {
+    box-shadow: var(--shadow-lg), 0 0 0 0 rgba(102, 126, 234, 0); /* Start with no glow */
+    border-color: var(--glass-border);
+  }
+  50% {
+    /* Pulse to a visible glow using the theme's primary color */
+    box-shadow: var(--shadow-lg), 0 0 25px 5px var(--primary-glow);
+    border-color: var(--primary-600);
+  }
+  100% {
+    box-shadow: var(--shadow-lg), 0 0 0 0 rgba(102, 126, 234, 0); /* Fade back to no glow */
+    border-color: var(--glass-border);
+  }
+}
+
+.result-highlight-animation {
+  /* Apply the animation to the results card */
+  animation: highlight-pulse 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* --- END: Mobile Result Highlight Animation --- */
+
+/* Mobile Home Icon - Updated for perfect centering */
+.home-icon-link {
+    position: static; /* Remains the same */
+    margin-left: auto; /* Pushes the button to the right side of the header */
+    
+    /* --- NEW RULES --- */
+    display: flex; /* Use flexbox for centering the icon */
+    align-items: center; /* Vertically center the icon */
+    justify-content: center; /* Horizontally center the icon */
+    
+    width: 28px; /* Define an explicit width */
+    height: 28px; /* Define an explicit height to make it a square */
+    
+    /* Add some visual polish */
+    border-radius: var(--radius-md); /* Give it slightly rounded corners */
+    background: rgba(255, 255, 255, 0.05); /* A subtle background for definition */
+    border: 1px solid var(--glass-border); /* Consistent with other elements */
+    transition: background var(--transition-normal); /* Smooth hover effect */
+}
+
+.home-icon-link:hover {
+    background: rgba(255, 255, 255, 0.1); /* Slightly lighter on hover */
+}
+
+.home-icon-link svg {
+     margin-right: 0; /* Remove the old margin */
+     width: 16px; /* Ensure SVG size is consistent */
+     height: 16px; /* Ensure SVG size is consistent */
+}
     
     .home-icon-link svg {
          margin-right: 5px;

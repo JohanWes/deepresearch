@@ -353,6 +353,7 @@ main:not(.container) {
 }
 
 .model-card {
+    box-sizing: border-box; /* Add this line */
     width: 220px;
     flex-shrink: 0;
     background: var(--glass-bg);

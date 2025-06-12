@@ -163,11 +163,6 @@ let availableModels = [];
 let selectedModel = null;
 let currentCarouselIndex = 0;
 
-// Ultra-simple mobile swipe variables
-let mobileStartX = 0;
-let mobileStartY = 0;
-let mobileStartTranslateX = 0;
-let mobileCurrentTranslateX = 0;
 
 async function loadAvailableModels() {
     try {
@@ -222,19 +217,102 @@ function renderDesktopCarousel() {
 
 function renderMobileView() {
     const modelCardsContainer = document.getElementById('model-cards');
+    const modelSelectorContainer = document.getElementById('model-selector-container');
+    
+    if (!modelCardsContainer || !modelSelectorContainer) return;
+    
+    // Clear existing content
     modelCardsContainer.innerHTML = '';
     
-    // Render all cards for mobile transform carousel
+    // Add Swiper container structure
+    const swiperContainer = document.createElement('div');
+    swiperContainer.className = 'swiper-container mobile-model-swiper';
+    
+    const swiperWrapper = document.createElement('div');
+    swiperWrapper.className = 'swiper-wrapper';
+    
+    // Create slides for each model
     availableModels.forEach(model => {
+        const slide = document.createElement('div');
+        slide.className = 'swiper-slide';
         const card = createModelCard(model);
-        modelCardsContainer.appendChild(card);
+        slide.appendChild(card);
+        swiperWrapper.appendChild(slide);
     });
     
-    // Initialize mobile carousel state
-    initializeMobileCarousel();
+    swiperContainer.appendChild(swiperWrapper);
     
-    // Add mobile touch event handlers
-    setupMobileTouchHandlers();
+    // Add pagination
+    const pagination = document.createElement('div');
+    pagination.className = 'swiper-pagination';
+    swiperContainer.appendChild(pagination);
+    
+    // Replace model cards container content
+    modelCardsContainer.appendChild(swiperContainer);
+    
+    // Initialize Swiper when ready
+    initializeMobileSwiper();
+}
+
+let mobileSwiper = null;
+
+function initializeMobileSwiper() {
+    // Wait for Swiper to load
+    if (!window.Swiper) {
+        if (window.swiperLoaded) {
+            // Swiper loaded but not available yet, wait a bit
+            setTimeout(initializeMobileSwiper, 50);
+        } else {
+            // Wait for swiper to load
+            window.addEventListener('swiperready', initializeMobileSwiper);
+        }
+        return;
+    }
+    
+    // Destroy existing instance if any
+    if (mobileSwiper) {
+        mobileSwiper.destroy(true, true);
+        mobileSwiper = null;
+    }
+    
+    // Find initial slide index based on selected model
+    const initialSlide = availableModels.findIndex(m => m.id === selectedModel);
+    
+    // Initialize Swiper
+    mobileSwiper = new Swiper('.mobile-model-swiper', {
+        slidesPerView: 'auto',
+        centeredSlides: true,
+        spaceBetween: 16,
+        initialSlide: initialSlide >= 0 ? initialSlide : 0,
+        pagination: {
+            el: '.swiper-pagination',
+            clickable: true,
+            dynamicBullets: true,
+            dynamicMainBullets: 3
+        },
+        speed: 300,
+        threshold: 10,
+        resistanceRatio: 0.85,
+        grabCursor: true,
+        on: {
+            click: function(swiper, event) {
+                // Handle card selection
+                const clickedSlide = swiper.slides[swiper.clickedIndex];
+                if (clickedSlide) {
+                    const modelCard = clickedSlide.querySelector('.model-card');
+                    if (modelCard) {
+                        const modelId = modelCard.dataset.modelId;
+                        selectModel(modelId);
+                        
+                        // Center the selected card
+                        if (swiper.clickedIndex !== swiper.activeIndex) {
+                            swiper.slideTo(swiper.clickedIndex);
+                        }
+                    }
+                }
+            }
+        }
+    });
 }
 
 function createModelCard(model) {
@@ -386,8 +464,16 @@ function selectModel(modelId) {
         card.classList.toggle('selected', card.dataset.modelId === modelId);
     });
     
-    // Ensure selected model is visible in carousel
-    ensureModelVisible(modelId);
+    // Handle mobile Swiper centering
+    if (window.innerWidth <= 768 && mobileSwiper) {
+        const selectedIndex = availableModels.findIndex(m => m.id === modelId);
+        if (selectedIndex >= 0 && selectedIndex !== mobileSwiper.activeIndex) {
+            mobileSwiper.slideTo(selectedIndex);
+        }
+    } else {
+        // Desktop carousel behavior remains unchanged
+        ensureModelVisible(modelId);
+    }
 }
 
 function ensureModelVisible(modelId) {
@@ -423,111 +509,6 @@ function ensureModelVisible(modelId) {
     updateCarouselButtons();
 }
 
-function initializeMobileCarousel() {
-    if (window.innerWidth > 768) return;
-    
-    // Start at position 0
-    mobileCurrentTranslateX = 0;
-    setMobilePosition(0);
-}
-
-function setMobilePosition(translateX) {
-    if (window.innerWidth > 768) return;
-    
-    const modelCardsContainer = document.getElementById('model-cards');
-    if (!modelCardsContainer) return;
-    
-    modelCardsContainer.style.transform = `translateX(${translateX}px)`;
-    mobileCurrentTranslateX = translateX;
-}
-
-function setupMobileTouchHandlers() {
-    if (window.innerWidth > 768) return;
-    
-    const selectorContainer = document.getElementById('model-selector-container');
-    if (!selectorContainer) return;
-    
-    // Remove existing event listeners
-    selectorContainer.removeEventListener('touchstart', handleMobileTouchStart);
-    selectorContainer.removeEventListener('touchmove', handleMobileTouchMove);
-    selectorContainer.removeEventListener('touchend', handleMobileTouchEnd);
-    
-    // Add real-time touch event listeners
-    selectorContainer.addEventListener('touchstart', handleMobileTouchStart, { passive: false });
-    selectorContainer.addEventListener('touchmove', handleMobileTouchMove, { passive: false });
-    selectorContainer.addEventListener('touchend', handleMobileTouchEnd, { passive: false });
-}
-
-function handleMobileTouchStart(e) {
-    const touch = e.touches[0];
-    mobileStartX = touch.clientX;
-    mobileStartY = touch.clientY;
-    mobileStartTranslateX = mobileCurrentTranslateX;
-    
-    // Disable CSS transition during touch
-    const cards = document.getElementById('model-cards');
-    if (cards) cards.classList.add('touching');
-}
-
-function handleMobileTouchMove(e) {
-    const touch = e.touches[0];
-    const deltaX = touch.clientX - mobileStartX;
-    const deltaY = touch.clientY - mobileStartY;
-    
-    // Only handle horizontal swipes to avoid interfering with vertical scrolling
-    // Increased threshold to prevent accidental movement during taps
-    if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 20) {
-        e.preventDefault(); // Prevent scrolling only for horizontal swipes
-        
-        // Simple: just follow the finger, no constraints during movement
-        const newTranslateX = mobileStartTranslateX + deltaX;
-        setMobilePosition(newTranslateX);
-    }
-}
-
-function handleMobileTouchEnd(e) {
-    // Re-enable CSS transition
-    const cards = document.getElementById('model-cards');
-    if (cards) cards.classList.remove('touching');
-    
-    // Apply boundaries only on touch end
-    const constrainedX = simpleConstrain(mobileCurrentTranslateX);
-    setMobilePosition(constrainedX);
-}
-
-function constrainPosition(translateX) {
-    if (window.innerWidth > 768) return translateX;
-    return simpleConstrain(translateX);
-}
-
-function simpleConstrain(translateX) {
-    const container = document.getElementById('model-selector-container');
-    const content = document.getElementById('model-cards');
-    
-    if (!container || !content) return translateX;
-    
-    // Ultra-simple: very generous right boundary to see first card fully
-    const maxRight = 400; // Generous allowance for cards #1 and #2 visibility  
-    const maxLeft = container.clientWidth - content.scrollWidth + 350; // Prevent over-swiping right
-    
-    return Math.max(maxLeft, Math.min(maxRight, translateX));
-}
-
-function ensureMobileModelVisible(modelId) {
-    if (window.innerWidth > 768) return;
-    
-    const modelIndex = availableModels.findIndex(m => m.id === modelId);
-    if (modelIndex === -1) return;
-    
-    // Calculate approximate position to show the selected model
-    const cardWidth = 160;
-    const cardGap = 16;
-    const targetTranslateX = -modelIndex * (cardWidth + cardGap);
-    
-    // Constrain and set position
-    const constrainedTranslateX = constrainPosition(targetTranslateX);
-    setMobilePosition(constrainedTranslateX);
-}
 
 document.addEventListener('DOMContentLoaded', () => {
     const searchForm = document.getElementById('search-form');
@@ -554,7 +535,16 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Handle window resize for responsive carousel
     window.addEventListener('resize', () => {
+        const wasMobile = mobileSwiper !== null;
+        const isMobile = window.innerWidth <= 768;
+        
         if (availableModels.length > 0) {
+            // Destroy Swiper if switching from mobile to desktop
+            if (wasMobile && !isMobile && mobileSwiper) {
+                mobileSwiper.destroy(true, true);
+                mobileSwiper = null;
+            }
+            
             renderModelSelector();
         }
     });
@@ -777,6 +767,31 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 async function handleStreamEnd(isError = false, query, researchId, sources, resultsDisplayDiv, sourcesDisplayContainer) {
+    // ======================= START: MOBILE-ONLY SCROLL & HIGHLIGHT =======================
+    if (window.innerWidth <= 768) {
+        const resultsDiv = document.getElementById('results');
+        if (resultsDiv) {
+            // Use a slight delay to ensure the content is rendered before scrolling.
+            setTimeout(() => {
+                // Scroll the results into view with a smooth animation.
+                // 'block: 'start'' ensures the top of the element aligns with the top of the viewport.
+                resultsDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+                // Find the results card and apply a temporary highlight animation.
+                const resultsCard = resultsDiv.querySelector('.results-card');
+                if (resultsCard) {
+                    resultsCard.classList.add('result-highlight-animation');
+
+                    // Remove the animation class after 2 seconds so it doesn't persist.
+                    setTimeout(() => {
+                        resultsCard.classList.remove('result-highlight-animation');
+                    }, 2000);
+                }
+            }, 100); // 100ms delay is usually sufficient.
+        }
+    }
+    // ======================== END: MOBILE-ONLY SCROLL & HIGHLIGHT =========================
+
     const loadingOverlay = document.getElementById('loading-overlay');
     const queryInput = document.getElementById('query-input');
     const researchButton = document.getElementById('research-button');
