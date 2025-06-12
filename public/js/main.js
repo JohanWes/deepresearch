@@ -767,6 +767,31 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 async function handleStreamEnd(isError = false, query, researchId, sources, resultsDisplayDiv, sourcesDisplayContainer) {
+    // ======================= START: MOBILE-ONLY SCROLL & HIGHLIGHT =======================
+    if (window.innerWidth <= 768) {
+        const resultsDiv = document.getElementById('results');
+        if (resultsDiv) {
+            // Use a slight delay to ensure the content is rendered before scrolling.
+            setTimeout(() => {
+                // Scroll the results into view with a smooth animation.
+                // 'block: 'start'' ensures the top of the element aligns with the top of the viewport.
+                resultsDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+                // Find the results card and apply a temporary highlight animation.
+                const resultsCard = resultsDiv.querySelector('.results-card');
+                if (resultsCard) {
+                    resultsCard.classList.add('result-highlight-animation');
+
+                    // Remove the animation class after 2 seconds so it doesn't persist.
+                    setTimeout(() => {
+                        resultsCard.classList.remove('result-highlight-animation');
+                    }, 2000);
+                }
+            }, 100); // 100ms delay is usually sufficient.
+        }
+    }
+    // ======================== END: MOBILE-ONLY SCROLL & HIGHLIGHT =========================
+
     const loadingOverlay = document.getElementById('loading-overlay');
     const queryInput = document.getElementById('query-input');
     const researchButton = document.getElementById('research-button');
