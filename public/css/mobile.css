@@ -149,14 +149,15 @@
         margin-bottom: var(--space-8);
     }
     
-    main:not(.container) input[type="text"] { 
-        width: 100%; 
-        max-width: none; 
-        border-radius: var(--radius-lg);
-        border: 2px solid var(--glass-border);
-        padding: var(--space-4);
-        font-size: var(--text-base);
-    }
+main:not(.container) input[type="text"] { 
+    width: 100%; 
+    max-width: none; 
+    border-radius: var(--radius-lg);
+    border: 2px solid var(--glass-border);
+    padding: var(--space-4);
+    font-size: var(--text-base);
+    box-sizing: border-box;
+}
     
     main:not(.container) button { 
         width: 100%; 
@@ -241,15 +242,35 @@
         margin-bottom: var(--space-3);
     }
 
-    /* Mobile Home Icon */
-    .home-icon-link {
-        position: static;
-        margin-left: auto;
-        padding: 0;
-        display: flex;
-        align-items: center;
-        height: 100%;
-    }
+/* Mobile Home Icon - Updated for perfect centering */
+.home-icon-link {
+    position: static; /* Remains the same */
+    margin-left: auto; /* Pushes the button to the right side of the header */
+    
+    /* --- NEW RULES --- */
+    display: flex; /* Use flexbox for centering the icon */
+    align-items: center; /* Vertically center the icon */
+    justify-content: center; /* Horizontally center the icon */
+    
+    width: 28px; /* Define an explicit width */
+    height: 28px; /* Define an explicit height to make it a square */
+    
+    /* Add some visual polish */
+    border-radius: var(--radius-md); /* Give it slightly rounded corners */
+    background: rgba(255, 255, 255, 0.05); /* A subtle background for definition */
+    border: 1px solid var(--glass-border); /* Consistent with other elements */
+    transition: background var(--transition-normal); /* Smooth hover effect */
+}
+
+.home-icon-link:hover {
+    background: rgba(255, 255, 255, 0.1); /* Slightly lighter on hover */
+}
+
+.home-icon-link svg {
+     margin-right: 0; /* Remove the old margin */
+     width: 16px; /* Ensure SVG size is consistent */
+     height: 16px; /* Ensure SVG size is consistent */
+}
     
     .home-icon-link svg {
          margin-right: 5px;

@@ -13,17 +13,37 @@ body {
     font-family: var(--font-primary); 
     margin: 0; 
     padding: 0; 
-    background: linear-gradient(135deg, var(--dark-950) 0%, var(--dark-900) 100%);
+    background: var(--dark-950); /* Use a solid background for full coverage */
     color: var(--text-primary); 
     font-size: var(--text-base); 
     line-height: 1.6; 
     display: flex;
-    width: 100vw;
-    max-width: 100vw;
-    height: 100vh;
-    overflow-x: hidden;
-    overflow-y: hidden;
+    width: 100%; /* Use 100% instead of 100vw to avoid issues */
+    
+    /* --- MODIFIED RULES --- */
+    min-height: 100vh; /* Ensure body is at least the full viewport height */
+    min-height: 100dvh; /* A MODERN fallback for dynamic viewport height on mobile */
+    
+    overflow-x: hidden; /* Keep this to prevent horizontal scroll */
+    /* REMOVED: overflow-y: hidden; We want main content to scroll, not the body */
+    /* REMOVED: height: 100vh; Replaced with min-height */
+    /* REMOVED: background: linear-gradient(...); moved to a pseudo-element */
+    
     flex-direction: row-reverse;
+    position: relative; /* Needed for the pseudo-element */
+    z-index: 1; /* Needed for the pseudo-element */
+}
+
+/* Add a pseudo-element for the gradient to ensure it covers the entire scrollable area */
+body::before {
+    content: '';
+    position: fixed; /* Fixed position covers the entire viewport */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, var(--dark-950) 0%, var(--dark-900) 100%);
+    z-index: -1; /* Place it behind all other content */
 }
 
 /* Login Page Styles */
