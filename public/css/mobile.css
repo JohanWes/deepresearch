@@ -68,43 +68,48 @@
         margin-bottom: var(--space-3);
     }
     
+    /* Mobile Model Selector - RESET a simple block layout */
     #model-selector-container {
-        flex-direction: column;
-        gap: var(--space-3);
-        max-width: none;
-        overflow: hidden;
+        display: block;
         width: 100%;
-        position: relative;
+        overflow: hidden;
     }
 
-    /* Mobile Carousel Transform-based (no scroll) */
+    /* Parent of Swiper - RESET to a simple block with NO padding/flex */
     #model-cards {
-        overflow: visible;
-        justify-content: flex-start;
-        padding: var(--space-2) var(--space-8);
-        max-width: none;
-        width: auto;
-        cursor: grab;
-        touch-action: pan-x;
+        display: block;
+        padding: 0;
+        margin: 0;
+        transform: none !important;
+        transition: none !important;
     }
-    
-    #model-cards:active {
-        cursor: grabbing;
+
+    /* Swiper Mobile Carousel Styles - The Core Setup */
+    .swiper-container {
+        width: 100%;
+        height: auto;
+        padding: var(--space-2) 0;
+        /* This ensures it doesn't get shrunk by any rogue flexbox parents */
+        flex-shrink: 0;
     }
-    
-    #model-cards.touching {
-        transition: none;
+
+    .swiper-wrapper {
+        display: flex;
+        align-items: stretch;
     }
-    
-    .model-card {
-        width: 160px;
-        padding: var(--space-3);
-        touch-action: manipulation;
+
+    .swiper-slide {
+        width: 85%; /* This will now be 85% of the full screen width */
+        height: auto;
+        flex-shrink: 0; /* Important for consistency */
     }
-    
-    .model-card:active {
-        transform: scale(0.98);
-        transition: transform 0.1s ease;
+
+    /* Ensure model cards work with Swiper */
+    .swiper-slide .model-card {
+        width: 100%; /* Card takes up 100% of the slide's 85% width */
+        margin: 0;
+        height: 100%;
+        cursor: pointer;
     }
     
     .model-name {

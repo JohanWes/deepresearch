@@ -246,9 +246,9 @@ app.get('/', (req, res) => {
     <meta name="theme-color" content="#222222">
     <link rel="stylesheet" href="/css/style.css">
 </head>
-    <body>
-        <div id="mobile-header">
-             <button id="sidebar-toggle">☰</button>
+            <body>
+                 <div id="mobile-header">
+                     <button id="sidebar-toggle">☰</button>
              <a href="/" class="home-icon-link" title="Go to Home Page">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
@@ -325,6 +325,17 @@ app.get('/', (req, res) => {
             <p id="rate-limit-count"></p>
         </div>
 
+        <script>
+if (window.innerWidth <= 768) {
+    const script = document.createElement('script');
+    script.src = 'https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js';
+    script.onload = function() {
+        window.swiperLoaded = true;
+        window.dispatchEvent(new Event('swiperready'));
+    };
+    document.head.appendChild(script);
+}
+</script>
         <script src="/js/main.js" defer></script>
     </body>
     </html>
