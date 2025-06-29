@@ -59,8 +59,8 @@ try {
 
 const DEFAULT_MODEL = process.env.DEFAULT_MODEL || AVAILABLE_MODELS.find(m => m.isDefault)?.id || AVAILABLE_MODELS[0]?.id;
 
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+app.use(express.json({ limit: '50mb' }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -746,6 +746,48 @@ app.get('/research/:id', async (req, res) => {
         } else {
             console.error(`Error retrieving research result:`, error);
             res.status(500).send('Error retrieving research result.');
+        }
+    }
+});
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+    if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
+        // This is a body-parser error, likely PayloadTooLargeError
+        console.error('Bad JSON or Payload Too Large Error:', err.message);
+        if (!res.headersSent) {
+            res.writeHead(200, {
+                'Content-Type': 'text/event-stream',
+                'Cache-Control': 'no-cache',
+                'Connection': 'keep-alive',
+            });
+            const sendSseMessage = (data, event = 'message') => {
+                const dataString = JSON.stringify(data);
+                res.write(`event: ${event}\ndata: ${dataString}\n\n`);
+            };
+            if (err.type === 'entity.too.large') {
+                sendSseMessage({ message: 'Request too large. Please try a shorter query or fewer sources.' }, 'error');
+            } else {
+                sendSseMessage({ message: 'Invalid request format. Please check your input.' }, 'error');
+            }
+            sendSseMessage('[DONE]');
+            res.end();
+        }
+    } else {
+        console.error('Unhandled server error:', err);
+        if (!res.headersSent) {
+            res.writeHead(200, {
+                'Content-Type': 'text/event-stream',
+                'Cache-Control': 'no-cache',
+                'Connection': 'keep-alive',
+            });
+            const sendSseMessage = (data, event = 'message') => {
+                const dataString = JSON.stringify(data);
+                res.write(`event: ${event}\ndata: ${dataString}\n\n`);
+            };
+            sendSseMessage({ message: 'An unexpected server error occurred. Please contact the system administrator.' }, 'error');
+            sendSseMessage('[DONE]');
+            res.end();
         }
     }
 });
